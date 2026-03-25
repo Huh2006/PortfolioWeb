@@ -5,9 +5,23 @@
    ═══════════════════════════════════════════════ */
 
 (function () {
-  const CREDS = { email: '[REDACTED]', password: '[REDACTED]' };
+  /*
+   * Credentials are stored as SHA-256 hashes so the plaintext
+   * password is never exposed in source code.
+   * To change the password, run in browser console:
+   *   crypto.subtle.digest('SHA-256', new TextEncoder().encode('your-new-password'))
+   *     .then(h => console.log([...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('')))
+   * Then paste the output as PASS_HASH below.
+   */
+  const EMAIL_HASH = '575370e89842cd25a31ea4dfd8372c6e6f7e63cf10f1fa1efa65b3d30792881d';
+  const PASS_HASH  = '4778cca143a956e1fe42a1cf24fa0ad67593f6c75a20b89c47fb8ba9f87a863a';
   const SESSION_KEY = 'portfolio_admin';
   let adminActive = false;
+
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+  }
 
   /* Expose for script.js card-click guard */
   window.isAdmin = () => adminActive;
@@ -66,10 +80,12 @@
     document.getElementById('almPass').value = '';
   }
 
-  function tryLogin() {
+  async function tryLogin() {
     const email = document.getElementById('almEmail').value.trim();
     const pass  = document.getElementById('almPass').value;
-    if (email === CREDS.email && pass === CREDS.password) {
+    const emailH = await sha256(email);
+    const passH  = await sha256(pass);
+    if (emailH === EMAIL_HASH && passH === PASS_HASH) {
       sessionStorage.setItem(SESSION_KEY, '1');
       closeLogin();
       activateAdmin();
