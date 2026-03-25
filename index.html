@@ -21,8 +21,15 @@
     <ul class="nav-links">
       <li><a href="#about">about</a></li>
       <li><a href="#projects">projects</a></li>
+      <li><a href="experience.html">experience</a></li>
       <li><a href="#contact">contact</a></li>
     </ul>
+    <button class="admin-btn" id="adminBtn" title="Admin Login">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="6" width="10" height="7" rx="1" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M4.5 6V4a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+    </button>
     <div class="nav-indicator" id="navIndicator"></div>
   </nav>
 
@@ -33,7 +40,7 @@
     <div class="hero-left">
       <div class="hero-eyebrow reveal-instant">
         <span class="eyebrow-line"></span>
-        <span>IT Student &amp; Builder</span>
+        <span data-editable-key="hero-eyebrow">IT Student &amp; Builder</span>
       </div>
 
       <h1 class="hero-heading">
@@ -41,7 +48,7 @@
         <span class="h-line h-name reveal-instant delay-2" id="heroName">Adrian</span>
       </h1>
 
-      <p class="hero-sub reveal-instant delay-3">
+      <p class="hero-sub reveal-instant delay-3" data-editable-key="hero-sub">
         Building things. Learning more.<br />One project at a time.
       </p>
 
@@ -79,16 +86,16 @@
         <h2 class="section-heading reveal">
           Who I <span class="underline-sketch">am</span>
         </h2>
-        <p class="reveal delay-1">
-          I'm Adrian — an IT student with a genuine curiosity for how things are built. I enjoy turning ideas into real, working things.
+        <p class="reveal delay-1" data-editable-key="about-p1">
+          I'm Adrian — an IT student at RMIT with a genuine curiosity for how things are built. I enjoy turning ideas into real, working things.
         </p>
-        <p class="reveal delay-2">
+        <p class="reveal delay-2" data-editable-key="about-p2">
           When I'm not studying, I'm exploring new tech, tinkering with projects, and trying to make things that actually matter.
         </p>
         <div class="about-chips reveal delay-3">
           <span class="chip">Problem Solver</span>
           <span class="chip">Builder</span>
-          <span class="chip">IT Student</span>
+          <span class="chip">IT Student @ RMIT</span>
           <span class="chip">Always Learning</span>
         </div>
       </div>
@@ -118,11 +125,10 @@
       <h2 class="section-heading reveal">
         Things I've <span class="underline-sketch green">built</span>
       </h2>
-      <p class="projects-sub reveal delay-1">More coming once my resume arrives.</p>
     </div>
 
     <div class="projects-grid">
-      <article class="project-card reveal delay-1" data-color="ink">
+      <article class="project-card reveal delay-1" data-project-id="001">
         <div class="card-top">
           <span class="card-num">001</span>
           <span class="card-status">Soon</span>
@@ -140,7 +146,7 @@
         <canvas class="card-canvas"></canvas>
       </article>
 
-      <article class="project-card reveal delay-2" data-color="ink">
+      <article class="project-card reveal delay-2" data-project-id="002">
         <div class="card-top">
           <span class="card-num">002</span>
           <span class="card-status">Soon</span>
@@ -158,7 +164,7 @@
         <canvas class="card-canvas"></canvas>
       </article>
 
-      <article class="project-card reveal delay-3 featured" data-color="green">
+      <article class="project-card featured reveal delay-3" data-project-id="003">
         <div class="card-top">
           <span class="card-num">003</span>
           <span class="card-badge">Featured</span>
@@ -191,14 +197,14 @@
         <h2 class="section-heading contact-heading">
           Let's <span class="underline-sketch green">connect</span>
         </h2>
-        <p>Have a project idea? Want to collaborate? Just want to say hi? My inbox is always open.</p>
+        <p data-editable-key="contact-desc">Have a project idea? Want to collaborate? Just want to say hi? My inbox is always open.</p>
         <canvas id="contactCanvas" width="160" height="160"></canvas>
       </div>
 
       <div class="contact-right">
-        <a href="mailto:hello@example.com" class="contact-row reveal delay-1">
+        <a href="mailto:adrian@anda.land" class="contact-row reveal delay-1">
           <span class="contact-label">email</span>
-          <span class="contact-val">hello@example.com</span>
+          <span class="contact-val">adrian@anda.land</span>
           <span class="contact-arrow">→</span>
         </a>
         <a href="https://github.com/" target="_blank" rel="noopener" class="contact-row reveal delay-2">
@@ -206,9 +212,9 @@
           <span class="contact-val">@adrian</span>
           <span class="contact-arrow">→</span>
         </a>
-        <a href="https://linkedin.com/" target="_blank" rel="noopener" class="contact-row reveal delay-3">
+        <a href="https://linkedin.com/in/adrian-tan12" target="_blank" rel="noopener" class="contact-row reveal delay-3">
           <span class="contact-label">linkedin</span>
-          <span class="contact-val">Adrian</span>
+          <span class="contact-val">adrian-tan12</span>
           <span class="contact-arrow">→</span>
         </a>
       </div>
@@ -222,6 +228,8 @@
   </footer>
 
   <script src="https://unpkg.com/roughjs@4.6.6/bundled/rough.js"></script>
+  <script src="data.js"></script>
   <script src="script.js"></script>
+  <script src="admin.js"></script>
 </body>
 </html>

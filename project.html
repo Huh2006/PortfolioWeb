@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project — Adrian</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Custom cursor -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-dot" id="cursorDot"></div>
+
+  <!-- Navigation -->
+  <nav id="nav">
+    <a href="index.html" class="nav-logo">Adrian<span class="dot">.</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html#about">about</a></li>
+      <li><a href="index.html#projects">projects</a></li>
+      <li><a href="experience.html">experience</a></li>
+      <li><a href="index.html#contact">contact</a></li>
+    </ul>
+    <button class="admin-btn" id="adminBtn" title="Admin Login">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <rect x="2" y="6" width="10" height="7" rx="1" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M4.5 6V4a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </nav>
+
+  <!-- ── CONTENT (rendered by JS) ── -->
+  <div id="ppContent"></div>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <a href="index.html" class="footer-name">Adrian<span class="dot">.</span></a>
+    <span class="footer-copy">Designed &amp; built with care — 2025</span>
+  </footer>
+
+  <script src="https://unpkg.com/roughjs@4.6.6/bundled/rough.js"></script>
+  <script src="data.js"></script>
+  <script src="admin.js"></script>
+  <script>
+    /* ── Cursor ── */
+    const cursor    = document.getElementById('cursor');
+    const cursorDot = document.getElementById('cursorDot');
+    let mx = 0, my = 0, cx = 0, cy = 0;
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      if (cursorDot) { cursorDot.style.left = mx + 'px'; cursorDot.style.top = my + 'px'; }
+    });
+    (function move() {
+      cx += (mx - cx) * 0.11; cy += (my - cy) * 0.11;
+      if (cursor) { cursor.style.left = cx + 'px'; cursor.style.top = cy + 'px'; }
+      requestAnimationFrame(move);
+    })();
+    function bindCursorHovers() {
+      document.querySelectorAll('a, button').forEach(el => {
+        el.addEventListener('mouseenter', () => { cursor?.classList.add('on-link'); cursorDot?.classList.add('on-link'); });
+        el.addEventListener('mouseleave', () => { cursor?.classList.remove('on-link'); cursorDot?.classList.remove('on-link'); });
+      });
+    }
+
+    /* ── Nav scroll ── */
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => nav?.classList.toggle('scrolled', window.scrollY > 60), { passive: true });
+
+    /* ── Read URL param ── */
+    const params  = new URLSearchParams(window.location.search);
+    const id      = params.get('id');
+    const project = window.PortfolioData ? window.PortfolioData.getProject(id) : null;
+
+    /* ── Render ── */
+    const container = document.getElementById('ppContent');
+
+    if (!project) {
+      document.title = 'Project Not Found — Adrian';
+      container.innerHTML = `
+        <div class="pp-wrap">
+          <div class="pp-not-found">
+            <h2>Project not found</h2>
+            <p>This project doesn't exist or may have been removed.</p>
+            <a href="index.html#projects" class="btn-ink" style="display:inline-flex;align-items:center;gap:10px;text-decoration:none;">
+              ← Back to projects
+            </a>
+          </div>
+        </div>`;
+      bindCursorHovers();
+    } else {
+      document.title = `${project.title} — Adrian`;
+
+      const statusMap  = { live: 'Live', wip: 'WIP', soon: 'Coming Soon' };
+      const statusLabel = statusMap[project.status] || 'Coming Soon';
+      const isLive      = project.status === 'live';
+
+      const techHTML = (project.tech && project.tech.length)
+        ? project.tech.map(t => `<span class="pp-tech-tag">${t}</span>`).join('')
+        : '';
+
+      const hasLink  = project.link && project.link.trim();
+      const btnLabel = project.linkType === 'download' ? 'Download Files' : 'Visit Project';
+      const btnIcon  = project.linkType === 'download'
+        ? `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M4 7l4 4 4-4M2 12h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+        : `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+      const ctaBtnHTML = hasLink
+        ? `<a href="${project.link}" target="_blank" rel="noopener" class="pp-cta-btn">${btnLabel} ${btnIcon}</a>`
+        : `<span class="pp-cta-btn no-link">Link coming soon</span>`;
+
+      const journalHTML = project.journal
+        ? `<div class="pp-entry reveal">
+            <div class="pp-section-label">The Story</div>
+            <h2 class="pp-section-heading">How it came <span class="underline-sketch">together</span></h2>
+            <p class="pp-text">${escapeHTML(project.journal)}</p>
+           </div>`
+        : `<div class="pp-entry reveal">
+            <div class="pp-section-label">The Story</div>
+            <h2 class="pp-section-heading">How it came <span class="underline-sketch">together</span></h2>
+            <p class="pp-text" style="font-style:italic;color:var(--ink-light)">Journal entry coming soon...</p>
+           </div>`;
+
+      const whatHTML = project.whatIDid
+        ? `<div class="pp-entry reveal delay-1">
+            <div class="pp-section-label">My Role</div>
+            <h2 class="pp-section-heading">What I <span class="underline-sketch green">did</span></h2>
+            <p class="pp-text">${escapeHTML(project.whatIDid)}</p>
+           </div>`
+        : '';
+
+      container.innerHTML = `
+        <div class="pp-wrap">
+
+          <div class="pp-back-row reveal-instant">
+            <a href="index.html#projects" class="pp-back">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M13 8H3M7 4l-4 4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Back to projects
+            </a>
+          </div>
+
+          <div class="pp-header reveal-instant delay-1">
+            <div class="pp-meta">
+              <span class="pp-num">${project.num || project.id}</span>
+              <span class="pp-status-badge${isLive ? ' live' : ''}">${statusLabel}</span>
+              ${project.featured ? '<span class="pp-status-badge live">Featured</span>' : ''}
+            </div>
+            <h1 class="pp-title">${project.title}</h1>
+            ${techHTML ? `<div class="pp-tech">${techHTML}</div>` : ''}
+          </div>
+
+          <div class="pp-rule"></div>
+
+          <div class="pp-body">
+            <div class="pp-journal">
+              ${journalHTML}
+              ${whatHTML}
+            </div>
+
+            <aside class="pp-sidebar">
+              <div class="pp-cta-box reveal delay-2">
+                <p class="pp-cta-label">Project link</p>
+                ${ctaBtnHTML}
+              </div>
+              <div class="pp-sketch-deco">
+                <canvas id="ppSketchCanvas" width="300" height="220"></canvas>
+              </div>
+              ${window.isAdmin && window.isAdmin() ? `
+              <div style="margin-top:16px;">
+                <button onclick="openEditFromPage()" class="pm-save-btn" style="width:100%">✏ Edit This Project</button>
+              </div>` : ''}
+            </aside>
+          </div>
+
+        </div>`;
+
+      /* Expose edit trigger for admin mode */
+      window.openEditFromPage = function() {
+        if (window.PortfolioData && typeof openProjectModal === 'function') {
+          openProjectModal(project);
+        }
+      };
+
+      /* Reveal animations */
+      const revObs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.reveal, .reveal-instant').forEach(el => revObs.observe(el));
+      document.querySelectorAll('.reveal-instant').forEach((el, i) => {
+        setTimeout(() => el.classList.add('visible'), [0, 200, 400][i] ?? i * 150);
+      });
+
+      /* Sketch decoration */
+      drawSidebarSketch();
+
+      bindCursorHovers();
+    }
+
+    /* ── Side sketch ── */
+    function drawSidebarSketch() {
+      const canvas = document.getElementById('ppSketchCanvas');
+      if (!canvas || typeof rough === 'undefined') return;
+      const rc  = rough.canvas(canvas);
+      const ctx = canvas.getContext('2d');
+      const green = '#4A7C59', warm = '#C4956A', ink = '#1A1A1A';
+      const base = { roughness: 2.2, strokeWidth: 1.2 };
+      let t = 0;
+      const d = (fn, ms) => setTimeout(fn, ms);
+
+      d(() => rc.rectangle(20, 20, 260, 180, { ...base, stroke: '#E5E0D5', roughness: 3 }), t += 400);
+      d(() => rc.line(20, 55, 280, 55, { ...base, stroke: '#E5E0D5', roughness: 2 }), t += 100);
+      d(() => {
+        [[35,75,180,75],[35,90,160,90],[35,105,200,105]].forEach(([x1,y1,x2,y2]) => {
+          rc.line(x1,y1,x2,y2, { ...base, stroke: green, roughness: 1.5, strokeWidth: 1 });
+        });
+      }, t += 80);
+      d(() => {
+        ctx.font = '600 18px Caveat, cursive'; ctx.fillStyle = ink;
+        ctx.globalAlpha = 0.3; ctx.fillText('project notes', 35, 45); ctx.globalAlpha = 1;
+      }, t += 80);
+      d(() => {
+        ctx.font = '14px Caveat, cursive'; ctx.fillStyle = warm;
+        ctx.globalAlpha = 0.5; ctx.fillText('✦', 240, 40);
+        ctx.globalAlpha = 0.4; ctx.fillText('✦', 258, 175);
+        ctx.globalAlpha = 1;
+      }, t += 60);
+      d(() => {
+        [[10,10,4,warm,0.5],[290,210,3,green,0.5],[285,15,3,ink,0.2]].forEach(([x,y,r,c,a]) => {
+          ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+          ctx.fillStyle = c; ctx.globalAlpha = a; ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+      }, t += 60);
+    }
+
+    /* ── Escape HTML ── */
+    function escapeHTML(str) {
+      const d = document.createElement('div');
+      d.appendChild(document.createTextNode(str));
+      return d.innerHTML.replace(/\n/g, '<br/>');
+    }
+  </script>
+  <style>
+    .footer-name { text-decoration: none; }
+  </style>
+</body>
+</html>
