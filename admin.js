@@ -14,7 +14,7 @@
    * Then paste the output as PASS_HASH below.
    */
   const EMAIL_HASH = '575370e89842cd25a31ea4dfd8372c6e6f7e63cf10f1fa1efa65b3d30792881d';
-  const PASS_HASH  = '4778cca143a956e1fe42a1cf24fa0ad67593f6c75a20b89c47fb8ba9f87a863a';
+  const PASS_HASH  = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
   const SESSION_KEY = 'portfolio_admin';
   let adminActive = false;
 
