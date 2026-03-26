@@ -138,10 +138,7 @@
     const bar = document.getElementById('adminBar');
     if (bar) bar.classList.add('visible');
 
-    /* Project cards: click opens edit modal */
-    document.querySelectorAll('.project-card').forEach(card => {
-      card.addEventListener('click', adminCardClick, true);
-    });
+    /* In desktop mode, admin adds projects via toolbar button */
   }
 
   function adminCardClick(e) {
@@ -169,9 +166,7 @@
     const bar = document.getElementById('adminBar');
     if (bar) bar.classList.remove('visible');
 
-    document.querySelectorAll('.project-card').forEach(card => {
-      card.removeEventListener('click', adminCardClick, true);
-    });
+    /* Desktop mode — no card listeners needed */
   }
 
   /* ── Project Modal ────────────────────────────── */
@@ -326,57 +321,11 @@
     refreshGrid();
   }
 
-  /* ── Refresh project grid after CRUD ──────────── */
+  /* ── Refresh file explorer after CRUD ─────────── */
   function refreshGrid() {
-    const grid = document.querySelector('.projects-grid');
-    if (!grid || !window.PortfolioData) return;
-
-    grid.innerHTML = window.PortfolioData.getProjects().map(buildCardHTML).join('');
-
-    /* Re-attach admin card listeners */
-    if (adminActive) {
-      grid.querySelectorAll('.project-card').forEach(card => {
-        card.addEventListener('click', adminCardClick, true);
-      });
+    if (typeof window.refreshDesktopFiles === 'function') {
+      window.refreshDesktopFiles();
     }
-
-    /* Re-attach rough.js hover borders */
-    if (typeof window.initCardHover === 'function') window.initCardHover();
-
-    /* Re-observe reveal elements */
-    grid.querySelectorAll('.project-card').forEach(el => {
-      if (window.revealObs) window.revealObs.observe(el);
-    });
-  }
-
-  function buildCardHTML(p) {
-    const statusMap = { live: 'Live', wip: 'WIP', soon: 'Soon' };
-    const statusLabel = statusMap[p.status] || 'Soon';
-    const tagsHTML = (p.tags && p.tags.length)
-      ? p.tags.map(t => `<span>${t}</span>`).join('')
-      : '<span>—</span>';
-    const badge = p.featured
-      ? `<span class="card-badge">Featured</span>`
-      : `<span class="card-status">${statusLabel}</span>`;
-
-    return `
-      <article class="project-card${p.featured ? ' featured' : ''} reveal" data-project-id="${p.id}">
-        <div class="card-top">
-          <span class="card-num">${p.num || p.id}</span>
-          ${badge}
-        </div>
-        <h3 class="card-title">${p.title}</h3>
-        <p class="card-desc">${p.desc}</p>
-        <div class="card-footer">
-          <div class="card-tags">${tagsHTML}</div>
-          <div class="card-arrow">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M3 9h12M11 5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-        </div>
-        <canvas class="card-canvas"></canvas>
-      </article>`;
   }
 
   /* ── Init ─────────────────────────────────────── */

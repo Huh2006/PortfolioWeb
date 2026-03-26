@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Adrian — IT Student</title>
+  <title>Adrian — Portfolio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
@@ -11,221 +11,71 @@
 </head>
 <body>
 
-  <!-- Custom cursor -->
-  <div class="cursor" id="cursor"></div>
-  <div class="cursor-dot" id="cursorDot"></div>
+  <!-- SVG filter for subtle hand-drawn wobble -->
+  <svg style="position:absolute;width:0;height:0;overflow:hidden">
+    <filter id="sketchy">
+      <feTurbulence type="turbulence" baseFrequency="0.015" numOctaves="3" seed="2" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.8" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </svg>
 
-  <!-- Navigation -->
-  <nav id="nav">
-    <div class="nav-logo">Adrian<span class="dot">.</span></div>
-    <ul class="nav-links">
-      <li><a href="#about">about</a></li>
-      <li><a href="#projects">projects</a></li>
-      <li><a href="experience.html">experience</a></li>
-      <li><a href="#contact">contact</a></li>
-    </ul>
-    <button class="admin-btn" id="adminBtn" title="Admin Login">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="2" y="6" width="10" height="7" rx="1" stroke="currentColor" stroke-width="1.3"/>
-        <path d="M4.5 6V4a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-      </svg>
-    </button>
-    <div class="nav-indicator" id="navIndicator"></div>
-  </nav>
-
-  <!-- ── HERO ───────────────────────────────────────── -->
-  <section id="hero">
+  <!-- ═══ HERO / LANDING ═══ -->
+  <div id="heroWrap">
     <canvas id="trailCanvas"></canvas>
-
     <div class="hero-left">
-      <div class="hero-eyebrow reveal-instant">
+      <div class="hero-eyebrow anim-in" style="--d:0">
         <span class="eyebrow-line"></span>
-        <span data-editable-key="hero-eyebrow">IT Student &amp; Builder</span>
+        <span>IT Student &amp; Builder</span>
       </div>
-
       <h1 class="hero-heading">
-        <span class="h-line h-hi reveal-instant delay-1">Hi, I'm</span>
-        <span class="h-line h-name reveal-instant delay-2" id="heroName">Adrian</span>
+        <span class="h-line h-hi anim-in" style="--d:1">Hi, I'm</span>
+        <span class="h-line h-name anim-in" style="--d:2">Adrian</span>
       </h1>
-
-      <p class="hero-sub reveal-instant delay-3" data-editable-key="hero-sub">
+      <p class="hero-sub anim-in" style="--d:3">
         Building things. Learning more.<br />One project at a time.
       </p>
-
-      <div class="hero-actions reveal-instant delay-4">
-        <a href="#projects" class="btn-ink">
-          See my work
+      <div class="hero-actions anim-in" style="--d:4">
+        <button class="btn-ink" id="enterDesktop">
+          Enter my workspace
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-        </a>
-        <a href="#contact" class="btn-ghost">Get in touch</a>
+        </button>
       </div>
     </div>
-
-    <div class="hero-right">
+    <div class="hero-right" id="heroRight">
       <canvas id="sketchCanvas" width="480" height="480"></canvas>
     </div>
+  </div>
 
-    <div class="scroll-hint">
-      <div class="scroll-bar"></div>
-      <span>scroll</span>
-    </div>
-  </section>
-
-  <!-- ── ABOUT ──────────────────────────────────────── -->
-  <section id="about">
-    <div class="section-tag reveal">
-      <span class="tag-num">01</span>
-      <span class="tag-slash">/</span>
-      <span class="tag-name">about</span>
-    </div>
-
-    <div class="about-grid">
-      <div class="about-text">
-        <h2 class="section-heading reveal">
-          Who I <span class="underline-sketch">am</span>
-        </h2>
-        <p class="reveal delay-1" data-editable-key="about-p1">
-          I'm Adrian — an IT student at RMIT with a genuine curiosity for how things are built. I enjoy turning ideas into real, working things.
-        </p>
-        <p class="reveal delay-2" data-editable-key="about-p2">
-          When I'm not studying, I'm exploring new tech, tinkering with projects, and trying to make things that actually matter.
-        </p>
-        <div class="about-chips reveal delay-3">
-          <span class="chip">Problem Solver</span>
-          <span class="chip">Builder</span>
-          <span class="chip">IT Student @ RMIT</span>
-          <span class="chip">Always Learning</span>
-        </div>
+  <!-- ═══ DESKTOP OS ═══ -->
+  <div id="desktop" class="hidden">
+    <!-- Desktop icon area -->
+    <div id="desktopIcons"></div>
+    <!-- Window layer -->
+    <div id="windowLayer"></div>
+    <!-- Taskbar -->
+    <div id="taskbar">
+      <div class="tb-left">
+        <button class="tb-start" id="startBtn">Adrian<span class="dot">.</span></button>
       </div>
-
-      <div class="about-visual reveal delay-2">
-        <canvas id="aboutCanvas" width="340" height="340"></canvas>
-        <div class="about-canvas-label">
-          <span>a little doodle</span>
-          <svg width="40" height="20" viewBox="0 0 40 20" fill="none">
-            <path d="M2 15 Q20 2 38 10" stroke="#9B9B9B" stroke-width="1" stroke-linecap="round"/>
-            <path d="M32 6 L38 10 L33 14" stroke="#9B9B9B" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+      <div class="tb-windows" id="tbWindows"></div>
+      <div class="tb-right">
+        <button class="tb-admin" id="adminBtn" title="Admin Login">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+            <rect x="2" y="6" width="10" height="7" rx="1" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M4.5 6V4a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
           </svg>
-        </div>
+        </button>
+        <button class="tb-logout" id="logoutBtn" title="Back to Home">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M5 1H3a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2M9 10l3-3-3-3M5 7h7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <span class="tb-clock" id="tbClock"></span>
       </div>
     </div>
-  </section>
-
-  <!-- ── PROJECTS ───────────────────────────────────── -->
-  <section id="projects">
-    <div class="section-tag reveal">
-      <span class="tag-num">02</span>
-      <span class="tag-slash">/</span>
-      <span class="tag-name">projects</span>
-    </div>
-
-    <div class="projects-header">
-      <h2 class="section-heading reveal">
-        Things I've <span class="underline-sketch green">built</span>
-      </h2>
-    </div>
-
-    <div class="projects-grid">
-      <article class="project-card reveal delay-1" data-project-id="001">
-        <div class="card-top">
-          <span class="card-num">001</span>
-          <span class="card-status">Soon</span>
-        </div>
-        <h3 class="card-title">Project One</h3>
-        <p class="card-desc">Details coming shortly — check back soon.</p>
-        <div class="card-footer">
-          <div class="card-tags"><span>—</span></div>
-          <div class="card-arrow">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M3 9h12M11 5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-        </div>
-        <canvas class="card-canvas"></canvas>
-      </article>
-
-      <article class="project-card reveal delay-2" data-project-id="002">
-        <div class="card-top">
-          <span class="card-num">002</span>
-          <span class="card-status">Soon</span>
-        </div>
-        <h3 class="card-title">Project Two</h3>
-        <p class="card-desc">Details coming shortly — check back soon.</p>
-        <div class="card-footer">
-          <div class="card-tags"><span>—</span></div>
-          <div class="card-arrow">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M3 9h12M11 5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-        </div>
-        <canvas class="card-canvas"></canvas>
-      </article>
-
-      <article class="project-card featured reveal delay-3" data-project-id="003">
-        <div class="card-top">
-          <span class="card-num">003</span>
-          <span class="card-badge">Featured</span>
-        </div>
-        <h3 class="card-title">Project Three</h3>
-        <p class="card-desc">Details coming shortly — check back soon.</p>
-        <div class="card-footer">
-          <div class="card-tags"><span>—</span></div>
-          <div class="card-arrow">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M3 9h12M11 5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-        </div>
-        <canvas class="card-canvas"></canvas>
-      </article>
-    </div>
-  </section>
-
-  <!-- ── CONTACT ────────────────────────────────────── -->
-  <section id="contact">
-    <div class="section-tag reveal">
-      <span class="tag-num">03</span>
-      <span class="tag-slash">/</span>
-      <span class="tag-name">contact</span>
-    </div>
-
-    <div class="contact-wrap">
-      <div class="contact-left reveal">
-        <h2 class="section-heading contact-heading">
-          Let's <span class="underline-sketch green">connect</span>
-        </h2>
-        <p data-editable-key="contact-desc">Have a project idea? Want to collaborate? Just want to say hi? My inbox is always open.</p>
-        <canvas id="contactCanvas" width="160" height="160"></canvas>
-      </div>
-
-      <div class="contact-right">
-        <a href="mailto:adrian@anda.land" class="contact-row reveal delay-1">
-          <span class="contact-label">email</span>
-          <span class="contact-val">adrian@anda.land</span>
-          <span class="contact-arrow">→</span>
-        </a>
-        <a href="https://github.com/Huh2006" target="_blank" rel="noopener" class="contact-row reveal delay-2">
-          <span class="contact-label">github</span>
-          <span class="contact-val">@Huh2006</span>
-          <span class="contact-arrow">→</span>
-        </a>
-        <a href="https://linkedin.com/in/adrian-tan12" target="_blank" rel="noopener" class="contact-row reveal delay-3">
-          <span class="contact-label">linkedin</span>
-          <span class="contact-val">adrian-tan12</span>
-          <span class="contact-arrow">→</span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ── FOOTER ─────────────────────────────────────── -->
-  <footer>
-    <span class="footer-name">Adrian<span class="dot">.</span></span>
-    <span class="footer-copy">Designed &amp; built with care — 2025</span>
-  </footer>
+  </div>
 
   <script src="https://unpkg.com/roughjs@4.6.6/bundled/rough.js"></script>
   <script src="data.js"></script>
