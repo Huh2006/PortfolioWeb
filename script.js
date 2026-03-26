@@ -186,6 +186,12 @@ $('#enterDesktop')?.addEventListener('click', () => {
 function logoutDesktop() {
   const desk = $('#desktop');
   const wrap = $('#heroWrap');
+  // Stop music
+  if (musicState.playing) {
+    musicState.playing = false;
+    stopSynth();
+    stopMusicTick();
+  }
   // Close all windows
   Object.keys(openWindows).forEach(id => closeWindow(id));
   // Fade out desktop
@@ -210,6 +216,17 @@ function initDesktop() {
   renderDesktopIcons();
   startClock();
   $('#logoutBtn')?.addEventListener('click', logoutDesktop);
+
+  // Auto-play Morning Sketch when entering desktop
+  if (!musicState.playing) {
+    musicState.trackIdx = 0;
+    musicState.elapsed = 0;
+    initAudio();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    musicState.playing = true;
+    startSynth();
+    startMusicTick();
+  }
 }
 
 /* ─── Rough.js Icon Drawing Helpers ────────────── */
@@ -352,6 +369,14 @@ function renderDesktopIcons() {
     el.innerHTML = `<canvas width="56" height="56"></canvas><span class="desk-icon-label">${ico.label}</span>`;
     const cvs = el.querySelector('canvas');
     ico.draw(cvs, 56, 56);
+
+    // Redraw icon on hover for alive sketch feel
+    el.addEventListener('mouseenter', () => {
+      const c = el.querySelector('canvas');
+      const ctx2 = c.getContext('2d');
+      ctx2.clearRect(0, 0, c.width, c.height);
+      ico.draw(c, 56, 56);
+    });
 
     let clicks = 0, clickTimer;
     el.addEventListener('click', () => {
@@ -756,7 +781,7 @@ function openResume() {
       </div>
 
       <div style="margin-bottom:20px">
-        <p><strong>Kitchen Hand — Local Hero Singapore</strong> <span style="color:var(--ink-light);font-size:15px">&nbsp; Wantirna South &nbsp;·&nbsp; Mar 2023 — Apr 2024</span></p>
+        <p><strong>Kitchen Hand — Local Her Singapore</strong> <span style="color:var(--ink-light);font-size:15px">&nbsp; Knox &nbsp;·&nbsp; Mar 2023 — Apr 2024</span></p>
         <p style="font-size:16px;margin-left:12px">
           · Prepared and plated menu items to strict recipe and presentation standards<br>
           · Coordinated with front-of-house to prioritise orders during peak periods<br>
@@ -772,7 +797,7 @@ function openResume() {
       </div>
 
       <div style="margin-bottom:12px">
-        <p><strong>St Andrews Christian College</strong> <span style="color:var(--ink-light);font-size:15px">&nbsp; Wantirna South &nbsp;·&nbsp; Jan 2011 — Dec 2024</span></p>
+        <p><strong>St Andrews Christian College</strong> <span style="color:var(--ink-light);font-size:15px">&nbsp; Knox &nbsp;·&nbsp; Jan 2011 — Dec 2024</span></p>
         <p style="font-size:16px;margin-left:12px">· Graduated Primary and Highschool</p>
       </div>
 
@@ -1100,14 +1125,14 @@ Builder of things. Always learning.</span>`,
 <span class="term-result">  Nov 2023 — Jun 2025</span>
 <span class="term-result">  POS transactions, customer service, inventory management</span>
 
-<span class="term-accent">  Crew Member</span> <span class="term-result">— McDonald's, Glen Waverley</span>
-<span class="term-result">  May 2023 — Nov 2023</span>
-<span class="term-result">  Food preparation, customer service</span>`,
+<span class="term-accent">  Kitchen Hand</span> <span class="term-result">— Local Her Singapore, Knox</span>
+<span class="term-result">  Mar 2023 — Apr 2024</span>
+<span class="term-result">  Food preparation, stock management, staff coaching</span>`,
 
     education: () =>
 `<span class="term-heading">Education</span>
 <span class="term-accent">  Bachelor of IT</span> <span class="term-result">— RMIT University (2025 — present)</span>
-<span class="term-accent">  VCE</span>             <span class="term-result">— Brentwood Secondary College (2019 — 2024)</span>`,
+<span class="term-accent">  Primary & High School</span> <span class="term-result">— St Andrews Christian College, Knox (2011 — 2024)</span>`,
 
     contact: () =>
 `<span class="term-heading">Contact</span>
@@ -1160,8 +1185,8 @@ function openTimeline() {
     { date: 'Sept 2025 — Feb 2026', title: 'IT Intern', place: 'Andatech — Vermont South', desc: 'Maintained and optimised company websites through on-page SEO, content updates and technical fixes. Monitored website performance and analytics. Updated pages on Shopify and WordPress.' },
     { date: 'Jun 2025 — Aug 2026', title: 'CRM Assistant', place: 'Andatech — Vermont South', desc: 'Maintained CRM database accuracy by cleaning, deduplicating and segmenting customer records. Assisted in CRM migration, supported automation for lead follow-up.' },
     { date: 'Nov 2023 — Jun 2025', title: 'Sales Assistant', place: 'Andatech — Vermont South', desc: 'Processed POS transactions, managed stock room, provided in-store customer service, assisted with online order packing.' },
-    { date: 'May 2023 — Nov 2023', title: 'Crew Member', place: "McDonald's — Glen Waverley", desc: 'Prepared food to safety standards, operated POS system, maintained cleanliness.' },
-    { date: '2019 — 2024', title: 'VCE', place: 'Brentwood Secondary College', desc: 'Completed Victorian Certificate of Education.' },
+    { date: 'Mar 2023 — Apr 2024', title: 'Kitchen Hand', place: 'Local Her Singapore — Knox', desc: 'Prepared and plated menu items, coordinated with front-of-house during peak periods, managed stock rotation and coached new staff.' },
+    { date: '2011 — 2024', title: 'Primary & High School', place: 'St Andrews Christian College — Knox', desc: 'Graduated primary and high school.' },
   ];
 
   let html = '<div class="timeline-wrap">';
