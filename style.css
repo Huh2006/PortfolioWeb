@@ -1078,6 +1078,36 @@ body::after {
   color: var(--ink-mid);
   line-height: 1.6;
 }
+.tl-edit-btn {
+  background: none;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: inherit;
+  padding: 1px 6px;
+  margin-left: 8px;
+  color: var(--ink-light);
+  font-family: var(--font-hand);
+  transition: background 0.15s, color 0.15s;
+}
+.tl-edit-btn:hover { background: var(--green); color: var(--white); border-color: var(--green); }
+.tl-add-btn {
+  background: var(--green);
+  color: var(--white);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-family: var(--font-hand);
+  font-size: 18px;
+  font-weight: 600;
+  cursor: inherit;
+  transition: opacity 0.15s;
+}
+.tl-add-btn:hover { opacity: 0.85; }
+
+/* Experience modal reuses .pm- styles from project modal */
+#expModal { display: none; }
+#expModal.open { display: block; }
 
 /* ─── Music Player ──────────────────────────────── */
 .music-wrap {

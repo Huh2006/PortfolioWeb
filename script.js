@@ -363,6 +363,7 @@ function renderDesktopIcons() {
     { id: 'help', label: 'Help.txt', draw: drawHelpIcon, action: () => openHelp() },
   ];
 
+  const iconEls = [];
   icons.forEach(ico => {
     const el = document.createElement('div');
     el.className = 'desk-icon';
@@ -390,7 +391,20 @@ function renderDesktopIcons() {
       }
     });
     area.appendChild(el);
+    iconEls.push({ el, draw: ico.draw });
   });
+
+  // Idle redraw animation — one random icon redraws every 2.5s
+  if (window._iconIdleInterval) clearInterval(window._iconIdleInterval);
+  window._iconIdleInterval = setInterval(() => {
+    const idx = Math.floor(Math.random() * iconEls.length);
+    const cvs = iconEls[idx].el.querySelector('canvas');
+    if (cvs) {
+      const ctx2 = cvs.getContext('2d');
+      ctx2.clearRect(0, 0, cvs.width, cvs.height);
+      iconEls[idx].draw(cvs, 56, 56);
+    }
+  }, 2500);
 }
 
 /* ─── Window Manager ───────────────────────────── */
@@ -718,6 +732,30 @@ function openAbout() {
 }
 
 function openResume() {
+  const allExp = window.PortfolioData ? window.PortfolioData.getExperience() : [];
+  allExp.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+  const work = allExp.filter(e => e.type === 'work');
+  const edu = allExp.filter(e => e.type === 'education');
+
+  let workHtml = '';
+  work.forEach(e => {
+    workHtml += `
+      <div style="margin-bottom:20px">
+        <p><strong>${e.title} — ${e.place}</strong> <span style="color:var(--ink-light);font-size:15px">&nbsp; ${e.location || ''} &nbsp;·&nbsp; ${e.date}</span></p>
+        <p style="font-size:16px;margin-left:12px">${e.desc}</p>
+      </div>`;
+  });
+
+  let eduHtml = '';
+  edu.forEach(e => {
+    eduHtml += `
+      <div style="margin-bottom:12px">
+        <p><strong>${e.title} — ${e.place}</strong> <span style="color:var(--ink-light);font-size:15px">&nbsp; ${e.location || ''} &nbsp;·&nbsp; ${e.date}</span></p>
+        ${e.desc ? `<p style="font-size:16px;margin-left:12px">${e.desc}</p>` : ''}
+      </div>`;
+  });
+
   const body = `
     <div class="notepad-body resume-text">
       <h2 style="font-size:36px;margin-bottom:2px">Adrian Tan</h2>
@@ -750,56 +788,10 @@ function openResume() {
       </div>
 
       <h3 style="color:var(--ink)">Employment History</h3>
-
-      <div style="margin-bottom:20px">
-        <p><strong>IT Intern — Andatech</strong> <span style="color:var(--ink-light);font-size:15px">&nbsp; Vermont South &nbsp;·&nbsp; Sept 2025 — Feb 2026</span></p>
-        <p style="font-size:16px;margin-left:12px">
-          · Maintained and optimised multiple company websites through on-page SEO, content updates and technical fixes<br>
-          · Monitored website performance and analytics to reduce load times and improve crawlability<br>
-          · Collaborated with marketing and development teams to implement SEO recommendations<br>
-          · Updated and created pages and elements on Shopify and WordPress
-        </p>
-      </div>
-
-      <div style="margin-bottom:20px">
-        <p><strong>CRM Assistant — Andatech</strong> <span style="color:var(--ink-light);font-size:15px">&nbsp; Vermont South &nbsp;·&nbsp; Jun 2025 — Aug 2026</span></p>
-        <p style="font-size:16px;margin-left:12px">
-          · Maintained and enhanced CRM database accuracy by cleaning, deduplicating and segmenting customer records<br>
-          · Assisted in migrating between CRM platforms<br>
-          · Collaborated with sales and product teams to implement CRM workflows and automation
-        </p>
-      </div>
-
-      <div style="margin-bottom:20px">
-        <p><strong>Front of House — Nana Green Tea</strong> <span style="color:var(--ink-light);font-size:15px">&nbsp; Melbourne &nbsp;·&nbsp; Sept 2024 — Feb 2025</span></p>
-        <p style="font-size:16px;margin-left:12px">
-          · Delivered friendly, efficient customer service — greeting guests, taking orders and ensuring accurate payment processing<br>
-          · Operated POS system and handled cash/card transactions; reconciled tills and prepared end-of-day reports<br>
-          · Prepared and served beverages and menu items to company standards<br>
-          · Coordinated with kitchen staff to manage table turnover during peak periods
-        </p>
-      </div>
-
-      <div style="margin-bottom:20px">
-        <p><strong>Kitchen Hand — Local Her Singapore</strong> <span style="color:var(--ink-light);font-size:15px">&nbsp; Knox &nbsp;·&nbsp; Mar 2023 — Apr 2024</span></p>
-        <p style="font-size:16px;margin-left:12px">
-          · Prepared and plated menu items to strict recipe and presentation standards<br>
-          · Coordinated with front-of-house to prioritise orders during peak periods<br>
-          · Managed stock rotation and conducted inventory checks<br>
-          · Onboarded and coached new kitchen staff in prep techniques and safety protocols
-        </p>
-      </div>
+      ${workHtml}
 
       <h3 style="color:var(--ink)">Education</h3>
-
-      <div style="margin-bottom:12px">
-        <p><strong>Information Technology — RMIT</strong> <span style="color:var(--ink-light);font-size:15px">&nbsp; Melbourne &nbsp;·&nbsp; Feb 2025 — Feb 2028</span></p>
-      </div>
-
-      <div style="margin-bottom:12px">
-        <p><strong>St Andrews Christian College</strong> <span style="color:var(--ink-light);font-size:15px">&nbsp; Knox &nbsp;·&nbsp; Jan 2011 — Dec 2024</span></p>
-        <p style="font-size:16px;margin-left:12px">· Graduated Primary and Highschool</p>
-      </div>
+      ${eduHtml}
 
       <div style="margin-top:24px;padding-top:16px;border-top:1.5px solid var(--rule)">
         <div style="display:flex;gap:12px;flex-wrap:wrap">
@@ -1110,29 +1102,23 @@ Builder of things. Always learning.</span>`,
       ).join('\n');
     },
 
-    experience: () =>
-`<span class="term-heading">Employment History</span>
+    experience: () => {
+      const exp = window.PortfolioData ? window.PortfolioData.getExperience().filter(e => e.type === 'work') : [];
+      if (!exp.length) return '<span class="term-result">No experience data yet.</span>';
+      exp.sort((a, b) => (a.order || 0) - (b.order || 0));
+      return '<span class="term-heading">Employment History</span>\n' + exp.map(e =>
+        `\n<span class="term-accent">  ${escHtml(e.title)}</span> <span class="term-result">— ${escHtml(e.place)}, ${escHtml(e.location || '')}</span>\n<span class="term-result">  ${escHtml(e.date)}</span>\n<span class="term-result">  ${escHtml(e.desc)}</span>`
+      ).join('\n');
+    },
 
-<span class="term-accent">  IT Intern</span> <span class="term-result">— Andatech, Vermont South</span>
-<span class="term-result">  Sept 2025 — Feb 2026</span>
-<span class="term-result">  Website maintenance, on-page SEO, Shopify & WordPress</span>
-
-<span class="term-accent">  CRM Assistant</span> <span class="term-result">— Andatech, Vermont South</span>
-<span class="term-result">  Jun 2025 — Aug 2026</span>
-<span class="term-result">  CRM database management, automation, data cleaning</span>
-
-<span class="term-accent">  Sales Assistant</span> <span class="term-result">— Andatech, Vermont South</span>
-<span class="term-result">  Nov 2023 — Jun 2025</span>
-<span class="term-result">  POS transactions, customer service, inventory management</span>
-
-<span class="term-accent">  Kitchen Hand</span> <span class="term-result">— Local Her Singapore, Knox</span>
-<span class="term-result">  Mar 2023 — Apr 2024</span>
-<span class="term-result">  Food preparation, stock management, staff coaching</span>`,
-
-    education: () =>
-`<span class="term-heading">Education</span>
-<span class="term-accent">  Bachelor of IT</span> <span class="term-result">— RMIT University (2025 — present)</span>
-<span class="term-accent">  Primary & High School</span> <span class="term-result">— St Andrews Christian College, Knox (2011 — 2024)</span>`,
+    education: () => {
+      const edu = window.PortfolioData ? window.PortfolioData.getExperience().filter(e => e.type === 'education') : [];
+      if (!edu.length) return '<span class="term-result">No education data yet.</span>';
+      edu.sort((a, b) => (a.order || 0) - (b.order || 0));
+      return '<span class="term-heading">Education</span>\n' + edu.map(e =>
+        `<span class="term-accent">  ${escHtml(e.title)}</span> <span class="term-result">— ${escHtml(e.place)}, ${escHtml(e.location || '')} (${escHtml(e.date)})</span>`
+      ).join('\n');
+    },
 
     contact: () =>
 `<span class="term-heading">Contact</span>
@@ -1180,29 +1166,54 @@ Builder of things. Always learning.</span>`,
 
 /* ═══ TIMELINE ═════════════════════════════════════ */
 function openTimeline() {
-  const entries = [
-    { date: '2025 — Present', title: 'Bachelor of IT', place: 'RMIT University', desc: 'Currently studying Information Technology, building skills in software development, networking, and system design.', current: true },
-    { date: 'Sept 2025 — Feb 2026', title: 'IT Intern', place: 'Andatech — Vermont South', desc: 'Maintained and optimised company websites through on-page SEO, content updates and technical fixes. Monitored website performance and analytics. Updated pages on Shopify and WordPress.' },
-    { date: 'Jun 2025 — Aug 2026', title: 'CRM Assistant', place: 'Andatech — Vermont South', desc: 'Maintained CRM database accuracy by cleaning, deduplicating and segmenting customer records. Assisted in CRM migration, supported automation for lead follow-up.' },
-    { date: 'Nov 2023 — Jun 2025', title: 'Sales Assistant', place: 'Andatech — Vermont South', desc: 'Processed POS transactions, managed stock room, provided in-store customer service, assisted with online order packing.' },
-    { date: 'Mar 2023 — Apr 2024', title: 'Kitchen Hand', place: 'Local Her Singapore — Knox', desc: 'Prepared and plated menu items, coordinated with front-of-house during peak periods, managed stock rotation and coached new staff.' },
-    { date: '2011 — 2024', title: 'Primary & High School', place: 'St Andrews Christian College — Knox', desc: 'Graduated primary and high school.' },
-  ];
+  const entries = window.PortfolioData ? window.PortfolioData.getExperience() : [];
+  // Sort by order field
+  entries.sort((a, b) => (a.order || 0) - (b.order || 0));
 
   let html = '<div class="timeline-wrap">';
   entries.forEach((e, i) => {
+    const editBtn = window.isAdmin && window.isAdmin() ?
+      ` <button class="tl-edit-btn" data-exp-id="${e.id}" title="Edit">✎</button>` : '';
     html += `
       <div class="tl-item${e.current ? ' current' : ''}" style="animation-delay:${i * 0.12}s">
-        <div class="tl-date">${e.date}</div>
+        <div class="tl-date">${e.date}${editBtn}</div>
         <div class="tl-title">${e.title}</div>
-        <div class="tl-place">${e.place}</div>
+        <div class="tl-place">${e.place} — ${e.location || ''}</div>
         <div class="tl-desc">${e.desc}</div>
       </div>`;
   });
+
+  if (window.isAdmin && window.isAdmin()) {
+    html += '<div style="text-align:center;margin-top:16px"><button class="tl-add-btn" id="tlAddExp">+ Add Experience</button></div>';
+  }
+
   html += '</div>';
 
-  createWindow('timeline', 'Timeline', 560, 500, html);
+  createWindow('timeline', 'Timeline', 560, 500, html, {
+    onReady: () => {
+      // Wire up edit buttons
+      document.querySelectorAll('.tl-edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (typeof window.openExpModal === 'function') {
+            const item = window.PortfolioData.getExperienceItem(btn.dataset.expId);
+            window.openExpModal(item);
+          }
+        });
+      });
+      const addBtn = document.getElementById('tlAddExp');
+      if (addBtn) addBtn.addEventListener('click', () => {
+        if (typeof window.openExpModal === 'function') window.openExpModal(null);
+      });
+    }
+  });
 }
+
+window.refreshTimeline = () => {
+  if (openWindows['timeline']) {
+    closeWindow('timeline');
+    openTimeline();
+  }
+};
 
 /* ═══ MUSIC PLAYER (Web Audio API Synth) ═══════════ */
 const musicTracks = [

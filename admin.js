@@ -107,6 +107,7 @@
         </div>
         <div class="abar-right">
           <button class="abar-btn" id="abarAdd">+ Add Project</button>
+          <button class="abar-btn" id="abarAddExp">+ Add Experience</button>
           <button class="abar-btn danger" id="abarLogout">Logout</button>
         </div>
       </div>`;
@@ -115,6 +116,8 @@
     document.getElementById('abarLogout').addEventListener('click', logout);
     const addBtn = document.getElementById('abarAdd');
     if (addBtn) addBtn.addEventListener('click', () => openProjectModal(null));
+    const addExpBtn = document.getElementById('abarAddExp');
+    if (addExpBtn) addExpBtn.addEventListener('click', () => openExpModal(null));
   }
 
   /* ── Activate / Deactivate ────────────────────── */
@@ -328,12 +331,165 @@
     }
   }
 
+  /* ── Experience Modal ─────────────────────────── */
+  function buildExpModal() {
+    const div = document.createElement('div');
+    div.id = 'expModal';
+    div.innerHTML = `
+      <div class="pm-overlay" id="emOverlay"></div>
+      <div class="pm-box">
+        <div class="pm-head">
+          <span id="emHeadTitle">Add Experience</span>
+          <button class="pm-close" id="emClose">✕</button>
+        </div>
+        <div class="pm-body">
+          <div class="pm-row">
+            <div class="pm-field">
+              <label class="pm-label">Title *</label>
+              <input class="pm-input" type="text" id="emFTitle" placeholder="e.g. IT Intern"/>
+            </div>
+            <div class="pm-field" style="max-width:150px">
+              <label class="pm-label">Type</label>
+              <select class="pm-input" id="emFType">
+                <option value="work">Work</option>
+                <option value="education">Education</option>
+              </select>
+            </div>
+          </div>
+          <div class="pm-row">
+            <div class="pm-field">
+              <label class="pm-label">Company / Institution *</label>
+              <input class="pm-input" type="text" id="emFPlace" placeholder="e.g. Andatech"/>
+            </div>
+            <div class="pm-field" style="max-width:150px">
+              <label class="pm-label">Location</label>
+              <input class="pm-input" type="text" id="emFLocation" placeholder="e.g. Knox"/>
+            </div>
+          </div>
+          <div class="pm-row">
+            <div class="pm-field">
+              <label class="pm-label">Date Range *</label>
+              <input class="pm-input" type="text" id="emFDate" placeholder="e.g. Sept 2025 — Feb 2026"/>
+            </div>
+            <div class="pm-field" style="max-width:100px">
+              <label class="pm-label">Order #</label>
+              <input class="pm-input" type="number" id="emFOrder" placeholder="0" min="0"/>
+            </div>
+          </div>
+          <div class="pm-field">
+            <label class="pm-label">Description</label>
+            <textarea class="pm-input" id="emFDesc" rows="4" placeholder="What you did, key responsibilities..."></textarea>
+          </div>
+          <div class="pm-check-wrap" style="margin-bottom:12px">
+            <input type="checkbox" id="emFCurrent" class="pm-check"/>
+            <label for="emFCurrent">Currently here</label>
+          </div>
+          <p class="pm-error" id="emError"></p>
+          <div class="pm-actions">
+            <button class="pm-delete-btn" id="emDelete">Delete</button>
+            <button class="pm-save-btn" id="emSave">Save</button>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(div);
+
+    document.getElementById('emClose').addEventListener('click', closeExpModal);
+    document.getElementById('emOverlay').addEventListener('click', closeExpModal);
+    document.getElementById('emSave').addEventListener('click', saveExp);
+    document.getElementById('emDelete').addEventListener('click', deleteExp);
+  }
+
+  let editingExpId = null;
+
+  function openExpModal(entry) {
+    editingExpId = entry ? entry.id : null;
+    document.getElementById('emHeadTitle').textContent = entry ? 'Edit Experience' : 'Add Experience';
+    document.getElementById('emFTitle').value    = entry?.title    || '';
+    document.getElementById('emFType').value     = entry?.type     || 'work';
+    document.getElementById('emFPlace').value    = entry?.place    || '';
+    document.getElementById('emFLocation').value = entry?.location || '';
+    document.getElementById('emFDate').value     = entry?.date     || '';
+    document.getElementById('emFOrder').value    = entry?.order ?? '';
+    document.getElementById('emFDesc').value     = entry?.desc     || '';
+    document.getElementById('emFCurrent').checked = !!entry?.current;
+    document.getElementById('emDelete').style.display = entry ? 'block' : 'none';
+    document.getElementById('emError').textContent = '';
+    document.getElementById('expModal').classList.add('open');
+  }
+
+  function closeExpModal() {
+    document.getElementById('expModal').classList.remove('open');
+    editingExpId = null;
+  }
+
+  function saveExp() {
+    if (!window.PortfolioData) return;
+    const title = document.getElementById('emFTitle').value.trim();
+    const place = document.getElementById('emFPlace').value.trim();
+    const date  = document.getElementById('emFDate').value.trim();
+    if (!title || !place || !date) {
+      document.getElementById('emError').textContent = 'Title, place, and date are required.';
+      return;
+    }
+
+    const data = {
+      title,
+      type:     document.getElementById('emFType').value,
+      place,
+      location: document.getElementById('emFLocation').value.trim(),
+      date,
+      order:    parseInt(document.getElementById('emFOrder').value) || 0,
+      desc:     document.getElementById('emFDesc').value.trim(),
+      current:  document.getElementById('emFCurrent').checked,
+    };
+
+    const entries = window.PortfolioData.getExperience();
+    if (editingExpId) {
+      const i = entries.findIndex(e => e.id === editingExpId);
+      if (i !== -1) entries[i] = { ...entries[i], ...data };
+    } else {
+      const id = 'e' + Date.now();
+      entries.push({ id, ...data });
+    }
+
+    window.PortfolioData.saveExperience(entries);
+    closeExpModal();
+
+    // Refresh timeline and resume if open
+    if (typeof window.refreshTimeline === 'function') window.refreshTimeline();
+    if (typeof closeWindow === 'function' && typeof openResume === 'function') {
+      // If resume is open, refresh it
+      const resumeWin = document.getElementById('win-resume');
+      if (resumeWin) {
+        // Close and reopen to refresh content
+        const winLayer = document.getElementById('windowLayer');
+        if (winLayer && resumeWin.parentNode === winLayer) {
+          resumeWin.remove();
+          delete window.openWindows?.['resume'];
+        }
+      }
+    }
+  }
+
+  function deleteExp() {
+    if (!editingExpId || !window.PortfolioData) return;
+    if (!confirm('Delete this experience entry? This cannot be undone.')) return;
+    const entries = window.PortfolioData.getExperience().filter(e => e.id !== editingExpId);
+    window.PortfolioData.saveExperience(entries);
+    closeExpModal();
+    if (typeof window.refreshTimeline === 'function') window.refreshTimeline();
+  }
+
+  /* Expose for script.js timeline edit buttons */
+  window.openExpModal = openExpModal;
+
   /* ── Init ─────────────────────────────────────── */
   document.addEventListener('DOMContentLoaded', () => {
     applyStoredText();
     buildLoginModal();
     buildToolbar();
     buildProjectModal();
+    buildExpModal();
 
     const btn = document.getElementById('adminBtn');
     if (btn) btn.addEventListener('click', openLogin);
