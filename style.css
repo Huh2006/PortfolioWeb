@@ -227,10 +227,6 @@ body::after {
   background: rgba(74, 124, 89, 0.06);
   border-color: rgba(74, 124, 89, 0.15);
 }
-.desk-icon.selected {
-  background: rgba(74, 124, 89, 0.1);
-  border-color: rgba(74, 124, 89, 0.3);
-}
 .desk-icon canvas {
   display: block;
 }

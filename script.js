@@ -416,7 +416,7 @@ function renderDesktopIcons() {
     el.addEventListener('click', () => {
       clicks++;
       if (clicks === 1) {
-        clickTimer = setTimeout(() => { clicks = 0; el.classList.toggle('selected'); }, 300);
+        clickTimer = setTimeout(() => { clicks = 0; }, 300);
       } else if (clicks === 2) {
         clearTimeout(clickTimer);
         clicks = 0;
