@@ -1179,14 +1179,109 @@ function openTimeline() {
   createWindow('timeline', 'Timeline', 560, 500, html);
 }
 
-/* ═══ MUSIC PLAYER ═════════════════════════════════ */
+/* ═══ MUSIC PLAYER (Web Audio API Synth) ═══════════ */
 const musicTracks = [
-  { title: 'Morning Sketch', artist: 'Lofi Adrian', bpm: 85, dur: 187 },
-  { title: 'Compile & Chill', artist: 'Lofi Adrian', bpm: 90, dur: 214 },
-  { title: 'Late Night Debug', artist: 'Lofi Adrian', bpm: 78, dur: 196 },
+  { title: 'Morning Sketch', artist: 'Lofi Adrian', bpm: 72, dur: 120,
+    key: 'C', chords: [[261.6,329.6,392],[293.7,349.2,440],[329.6,392,493.9],[261.6,329.6,392]],
+    melody: [523.3,493.9,440,392,440,493.9,523.3,0,440,392,349.2,329.6,349.2,392,440,0] },
+  { title: 'Compile & Chill', artist: 'Lofi Adrian', bpm: 80, dur: 120,
+    key: 'Am', chords: [[220,261.6,329.6],[196,246.9,293.7],[174.6,220,261.6],[196,246.9,329.6]],
+    melody: [659.3,0,523.3,440,523.3,659.3,0,440,523.3,0,440,392,440,523.3,659.3,0] },
+  { title: 'Late Night Debug', artist: 'Lofi Adrian', bpm: 66, dur: 120,
+    key: 'Dm', chords: [[293.7,349.2,440],[261.6,329.6,392],[233.1,293.7,349.2],[261.6,329.6,440]],
+    melody: [587.3,523.3,0,440,523.3,587.3,0,523.3,440,0,349.2,293.7,349.2,440,523.3,0] },
 ];
 
 let musicState = { playing: false, trackIdx: 0, elapsed: 0, interval: null };
+let audioCtx = null, masterGain = null, lofiFilter = null;
+let synthInterval = null, chordStep = 0, melodyStep = 0;
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  // Lo-fi filter chain: lowpass → slight distortion → master gain
+  lofiFilter = audioCtx.createBiquadFilter();
+  lofiFilter.type = 'lowpass';
+  lofiFilter.frequency.value = 1200;
+  lofiFilter.Q.value = 1.5;
+
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.3;
+
+  lofiFilter.connect(masterGain);
+  masterGain.connect(audioCtx.destination);
+}
+
+function playNote(freq, duration, delay, type, vol) {
+  if (!audioCtx || freq === 0) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type || 'sine';
+  osc.frequency.value = freq;
+
+  // Slight detune for warmth
+  osc.detune.value = (Math.random() - 0.5) * 12;
+
+  gain.gain.setValueAtTime(0, audioCtx.currentTime + delay);
+  gain.gain.linearRampToValueAtTime(vol || 0.15, audioCtx.currentTime + delay + 0.05);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + duration);
+
+  osc.connect(gain);
+  gain.connect(lofiFilter);
+  osc.start(audioCtx.currentTime + delay);
+  osc.stop(audioCtx.currentTime + delay + duration + 0.05);
+}
+
+function playChord(freqs, duration, delay) {
+  freqs.forEach(f => playNote(f, duration, delay, 'triangle', 0.08));
+}
+
+function startSynth() {
+  stopSynth();
+  const track = musicTracks[musicState.trackIdx];
+  const beatLen = 60 / track.bpm;
+  chordStep = 0;
+  melodyStep = 0;
+
+  // Play first beat immediately
+  playBeat(track, beatLen);
+
+  synthInterval = setInterval(() => {
+    if (!musicState.playing) return;
+    playBeat(track, beatLen);
+  }, beatLen * 1000);
+}
+
+function playBeat(track, beatLen) {
+  // Chord every 4 beats
+  if (melodyStep % 4 === 0) {
+    const chord = track.chords[chordStep % track.chords.length];
+    playChord(chord, beatLen * 3.5, 0);
+    chordStep++;
+  }
+
+  // Melody note every beat
+  const note = track.melody[melodyStep % track.melody.length];
+  if (note > 0) {
+    playNote(note, beatLen * 0.8, 0, 'sine', 0.12);
+    // Add a quiet octave-down undertone
+    playNote(note / 2, beatLen * 0.6, 0.02, 'triangle', 0.04);
+  }
+
+  // Soft kick-like thump on beats 0 and 2
+  if (melodyStep % 4 === 0 || melodyStep % 4 === 2) {
+    playNote(80, 0.15, 0, 'sine', 0.18);
+  }
+  // Hi-hat on every beat (noise approximation via high-freq)
+  playNote(8000 + Math.random() * 2000, 0.04, 0, 'square', 0.015);
+
+  melodyStep++;
+}
+
+function stopSynth() {
+  if (synthInterval) { clearInterval(synthInterval); synthInterval = null; }
+}
 
 function openMusic() {
   const t = musicTracks[musicState.trackIdx];
@@ -1224,13 +1319,11 @@ function openMusic() {
 
   createWindow('music', 'Music Player', 340, 480, body);
 
-  // Draw album art
   setTimeout(() => {
     const artC = $('#musicArtCanvas');
     if (artC) drawAlbumArt(artC, musicState.trackIdx);
   }, 50);
 
-  // Wire buttons
   setTimeout(() => {
     const playBtn = $('#musicPlay');
     if (playBtn) playBtn.onclick = toggleMusic;
@@ -1238,13 +1331,11 @@ function openMusic() {
     if (prevBtn) prevBtn.onclick = () => switchTrack(musicState.trackIdx - 1);
     const nextBtn = $('#musicNext');
     if (nextBtn) nextBtn.onclick = () => switchTrack(musicState.trackIdx + 1);
-
     document.querySelectorAll('.music-track').forEach(tr => {
       tr.onclick = () => switchTrack(parseInt(tr.dataset.idx));
     });
   }, 50);
 
-  // Kick off ticker if already playing
   if (musicState.playing) startMusicTick();
 }
 
@@ -1258,7 +1349,6 @@ function drawAlbumArt(canvas, idx) {
   rc.circle(80, 80, 90, { roughness: 2.5, stroke: c[0], strokeWidth: 1.5 });
   rc.circle(80, 80, 50, { roughness: 2, stroke: c[1], strokeWidth: 1.3 });
   rc.circle(80, 80, 16, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1.3, fill: '#1A1A1A', fillStyle: 'solid' });
-  // Note symbol
   ctx.font = '700 18px Caveat'; ctx.fillStyle = c[2]; ctx.globalAlpha = 0.6;
   ctx.fillText('♪', 112, 40); ctx.fillText('♫', 30, 130); ctx.globalAlpha = 1;
 }
@@ -1270,9 +1360,11 @@ function fmtTime(s) {
 }
 
 function toggleMusic() {
+  initAudio();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
   musicState.playing = !musicState.playing;
-  if (musicState.playing) startMusicTick();
-  else stopMusicTick();
+  if (musicState.playing) { startSynth(); startMusicTick(); }
+  else { stopSynth(); stopMusicTick(); }
   updateMusicUI();
 }
 
@@ -1296,9 +1388,12 @@ function stopMusicTick() {
 function switchTrack(idx) {
   if (idx < 0) idx = musicTracks.length - 1;
   if (idx >= musicTracks.length) idx = 0;
+  const wasPlaying = musicState.playing;
+  if (wasPlaying) { stopSynth(); stopMusicTick(); }
   musicState.trackIdx = idx;
   musicState.elapsed = 0;
-  if (musicState.playing) { stopMusicTick(); startMusicTick(); }
+  chordStep = 0; melodyStep = 0;
+  if (wasPlaying) { startSynth(); startMusicTick(); }
   updateMusicUI();
   const artC = $('#musicArtCanvas');
   if (artC) drawAlbumArt(artC, idx);
