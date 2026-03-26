@@ -226,7 +226,6 @@ body::after {
 .desk-icon:hover {
   background: rgba(74, 124, 89, 0.06);
   border-color: rgba(74, 124, 89, 0.15);
-  animation: iconWobble 0.6s ease infinite;
 }
 .desk-icon.selected {
   background: rgba(74, 124, 89, 0.1);

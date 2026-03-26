@@ -6,6 +6,45 @@ const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 const RC = (c) => typeof rough !== 'undefined' ? rough.canvas(c) : null;
 
+/* ═══ GLOBAL WRIGGLE ENGINE ════════════════════════
+   Every canvas with ._wriggleDraw gets constantly redrawn.
+   Rough.js randomness makes each redraw slightly different
+   → living, breathing sketch effect.
+   ═══════════════════════════════════════════════════ */
+const WRIGGLE_FPS = 8; // redraws per second (smooth wiggle without killing CPU)
+let _wriggleRunning = false;
+let _wriggleLast = 0;
+
+function startWriggle() {
+  if (_wriggleRunning) return;
+  _wriggleRunning = true;
+  requestAnimationFrame(wriggleTick);
+}
+
+function stopWriggle() {
+  _wriggleRunning = false;
+}
+
+function wriggleTick(ts) {
+  if (!_wriggleRunning) return;
+  if (ts - _wriggleLast >= 1000 / WRIGGLE_FPS) {
+    _wriggleLast = ts;
+    document.querySelectorAll('[data-wriggle]').forEach(cvs => {
+      if (cvs._wriggleDraw && cvs.offsetParent !== null) { // only if visible
+        const ctx = cvs.getContext('2d');
+        ctx.clearRect(0, 0, cvs.width, cvs.height);
+        cvs._wriggleDraw();
+      }
+    });
+  }
+  requestAnimationFrame(wriggleTick);
+}
+
+function markWriggle(canvas, drawFn) {
+  canvas.setAttribute('data-wriggle', '');
+  canvas._wriggleDraw = drawFn;
+}
+
 /* ═══ BOOT SCREEN ══════════════════════════════════ */
 (function boot() {
   const screen = $('#bootScreen');
@@ -186,6 +225,8 @@ $('#enterDesktop')?.addEventListener('click', () => {
 function logoutDesktop() {
   const desk = $('#desktop');
   const wrap = $('#heroWrap');
+  // Stop wriggle engine
+  stopWriggle();
   // Stop music
   if (musicState.playing) {
     musicState.playing = false;
@@ -363,21 +404,13 @@ function renderDesktopIcons() {
     { id: 'help', label: 'Help.txt', draw: drawHelpIcon, action: () => openHelp() },
   ];
 
-  const iconEls = [];
   icons.forEach(ico => {
     const el = document.createElement('div');
     el.className = 'desk-icon';
     el.innerHTML = `<canvas width="56" height="56"></canvas><span class="desk-icon-label">${ico.label}</span>`;
     const cvs = el.querySelector('canvas');
     ico.draw(cvs, 56, 56);
-
-    // Redraw icon on hover for alive sketch feel
-    el.addEventListener('mouseenter', () => {
-      const c = el.querySelector('canvas');
-      const ctx2 = c.getContext('2d');
-      ctx2.clearRect(0, 0, c.width, c.height);
-      ico.draw(c, 56, 56);
-    });
+    markWriggle(cvs, () => ico.draw(cvs, 56, 56));
 
     let clicks = 0, clickTimer;
     el.addEventListener('click', () => {
@@ -391,20 +424,10 @@ function renderDesktopIcons() {
       }
     });
     area.appendChild(el);
-    iconEls.push({ el, draw: ico.draw });
   });
 
-  // Idle redraw animation — one random icon redraws every 2.5s
-  if (window._iconIdleInterval) clearInterval(window._iconIdleInterval);
-  window._iconIdleInterval = setInterval(() => {
-    const idx = Math.floor(Math.random() * iconEls.length);
-    const cvs = iconEls[idx].el.querySelector('canvas');
-    if (cvs) {
-      const ctx2 = cvs.getContext('2d');
-      ctx2.clearRect(0, 0, cvs.width, cvs.height);
-      iconEls[idx].draw(cvs, 56, 56);
-    }
-  }, 2500);
+  // Start the global wriggle engine
+  startWriggle();
 }
 
 /* ─── Window Manager ───────────────────────────── */
@@ -628,7 +651,9 @@ function addFolderItem(grid, name, onClick) {
   const el = document.createElement('div');
   el.className = 'fe-item';
   el.innerHTML = `<canvas width="48" height="48"></canvas><span class="fe-item-name">${name}</span>`;
-  drawFolderIcon(el.querySelector('canvas'), 48, 48);
+  const cvs = el.querySelector('canvas');
+  drawFolderIcon(cvs, 48, 48);
+  markWriggle(cvs, () => drawFolderIcon(cvs, 48, 48));
   let clicks = 0, timer;
   el.addEventListener('click', () => {
     clicks++;
@@ -643,8 +668,13 @@ function addFileItem(grid, name, ext, onClick) {
   el.className = 'fe-item';
   el.innerHTML = `<canvas width="48" height="48"></canvas><span class="fe-item-name">${name}</span>`;
   const cvs = el.querySelector('canvas');
-  if (ext === '.png' || ext === '.jpg') drawImageIcon(cvs, 48, 48);
-  else drawFileIcon(cvs, 48, 48, ext);
+  if (ext === '.png' || ext === '.jpg') {
+    drawImageIcon(cvs, 48, 48);
+    markWriggle(cvs, () => drawImageIcon(cvs, 48, 48));
+  } else {
+    drawFileIcon(cvs, 48, 48, ext);
+    markWriggle(cvs, () => drawFileIcon(cvs, 48, 48, ext));
+  }
   let clicks = 0, timer;
   el.addEventListener('click', () => {
     clicks++;
@@ -894,7 +924,12 @@ function initPaintApp(win) {
       (c) => { const r = RC(c); r.rectangle(3, 3, 16, 16, { roughness: 2, stroke: '#1A1A1A', strokeWidth: 1.3 }); }, // rect
       (c) => { const r = RC(c); r.circle(11, 11, 16, { roughness: 2, stroke: '#1A1A1A', strokeWidth: 1.3 }); }, // circle
     ];
-    toolCanvases.forEach((c, i) => { if (iconData[i]) iconData[i](c); });
+    toolCanvases.forEach((c, i) => {
+      if (iconData[i]) {
+        iconData[i](c);
+        markWriggle(c, () => iconData[i](c));
+      }
+    });
   }
 
   // Tool selection
@@ -1357,7 +1392,10 @@ function openMusic() {
 
   setTimeout(() => {
     const artC = $('#musicArtCanvas');
-    if (artC) drawAlbumArt(artC, musicState.trackIdx);
+    if (artC) {
+      drawAlbumArt(artC, musicState.trackIdx);
+      markWriggle(artC, () => drawAlbumArt(artC, musicState.trackIdx));
+    }
   }, 50);
 
   setTimeout(() => {
@@ -1432,7 +1470,10 @@ function switchTrack(idx) {
   if (wasPlaying) { startSynth(); startMusicTick(); }
   updateMusicUI();
   const artC = $('#musicArtCanvas');
-  if (artC) drawAlbumArt(artC, idx);
+  if (artC) {
+    drawAlbumArt(artC, idx);
+    markWriggle(artC, () => drawAlbumArt(artC, idx));
+  }
 }
 
 function updateMusicUI() {
