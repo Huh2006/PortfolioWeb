@@ -200,11 +200,13 @@ body::after {
   flex: 1;
   position: relative;
   padding: 24px;
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-  align-content: flex-start;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 90px);
+  grid-template-rows: repeat(auto-fill, 100px);
+  grid-auto-flow: column;
+  align-content: start;
   gap: 8px;
+  overflow: hidden;
 }
 
 /* ─── Desktop Icons ─────────────────────────────── */
@@ -1192,6 +1194,9 @@ body::after {
   #desktopIcons {
     padding: 16px;
     gap: 4px;
+    grid-template-columns: repeat(auto-fill, 76px);
+    grid-template-rows: repeat(auto-fill, 90px);
+    grid-auto-flow: row;
   }
   .desk-icon { width: 76px; }
 

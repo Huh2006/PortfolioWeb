@@ -1011,7 +1011,7 @@ function openTerminal() {
         <input class="term-input" id="termInput" type="text" autocomplete="off" autofocus spellcheck="false" />
       </div>
     </div>`;
-  createWindow('terminal', 'Terminal', body, 640, 420);
+  createWindow('terminal', 'Terminal', 640, 420, body);
   const input = $('#termInput');
   const output = $('#termOutput');
   if (!input || !output) return;
@@ -1176,7 +1176,7 @@ function openTimeline() {
   });
   html += '</div>';
 
-  createWindow('timeline', 'Timeline', html, 560, 500);
+  createWindow('timeline', 'Timeline', 560, 500, html);
 }
 
 /* ═══ MUSIC PLAYER ═════════════════════════════════ */
@@ -1222,7 +1222,7 @@ function openMusic() {
       ${playlistHtml}
     </div>`;
 
-  createWindow('music', 'Music Player', body, 340, 480);
+  createWindow('music', 'Music Player', 340, 480, body);
 
   // Draw album art
   setTimeout(() => {
@@ -1368,7 +1368,7 @@ function openHelp() {
       to create a unique sketchbook aesthetic. Each element is slightly
       different every time — just like real pencil drawings.</p>
     </div>`;
-  createWindow('help', 'Help.txt', body, 520, 480);
+  createWindow('help', 'Help.txt', 520, 480, body);
 }
 
 /* ═══ EXPOSE FOR ADMIN ═════════════════════════════ */
