@@ -6,6 +6,70 @@ const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 const RC = (c) => typeof rough !== 'undefined' ? rough.canvas(c) : null;
 
+/* ═══ BOOT SCREEN ══════════════════════════════════ */
+(function boot() {
+  const screen = $('#bootScreen');
+  if (!screen) return;
+
+  const lines = [
+    'loading adrian.os...',
+    'mounting filesystem',
+    'initializing rough.js engine',
+    'loading projects from memory',
+    'preparing desktop icons',
+    'connecting pencil driver',
+    'boot complete — welcome back, Adrian'
+  ];
+
+  const linesEl = $('#bootLines');
+  const bar = $('#bootBar');
+  const logo = $('#bootLogo');
+
+  // Draw boot logo with Rough.js
+  setTimeout(() => {
+    const rc = RC(logo);
+    if (rc) {
+      rc.circle(30, 30, 40, { roughness: 2, stroke: '#4A7C59', strokeWidth: 1.5 });
+      rc.line(18, 30, 42, 30, { roughness: 1.5, stroke: '#F7F5F0', strokeWidth: 1.3 });
+      rc.line(30, 18, 30, 42, { roughness: 1.5, stroke: '#F7F5F0', strokeWidth: 1.3 });
+    }
+  }, 100);
+
+  let i = 0;
+  const total = lines.length;
+
+  function addLine() {
+    if (i >= total) {
+      // Boot done — fade out and show hero
+      setTimeout(() => {
+        screen.classList.add('fading');
+        setTimeout(() => {
+          screen.classList.add('hidden');
+          const hero = $('#heroWrap');
+          hero.classList.remove('hidden');
+        }, 600);
+      }, 400);
+      return;
+    }
+
+    const div = document.createElement('div');
+    div.className = 'line' + (i === total - 1 ? ' ok' : '');
+    div.textContent = '> ' + lines[i];
+    div.style.animationDelay = '0s';
+    linesEl.appendChild(div);
+    bar.style.width = ((i + 1) / total * 100) + '%';
+    i++;
+
+    // Scroll to bottom
+    linesEl.scrollTop = linesEl.scrollHeight;
+
+    const delay = 200 + Math.random() * 350;
+    setTimeout(addLine, delay);
+  }
+
+  setTimeout(addLine, 600);
+})();
+
 /* ═══ HERO ═════════════════════════════════════════ */
 
 /* ─── Trail Canvas ─────────────────────────────── */
@@ -221,6 +285,51 @@ function drawImageIcon(canvas, w, h) {
   rc.line(34 * s, 36 * s, 50 * s, 24 * s, { roughness: 1.5, stroke: '#4A7C59', strokeWidth: 1.3 });
 }
 
+/* ─── New Icon Drawers ─────────────────────────── */
+function drawTerminalIcon(canvas, w, h) {
+  const rc = RC(canvas); if (!rc) return;
+  canvas.width = w; canvas.height = h;
+  const s = w / 56;
+  rc.rectangle(6*s, 8*s, 44*s, 40*s, { roughness: 1.8, stroke: '#1A1A1A', strokeWidth: 1.3, fill: '#1A1A1A', fillStyle: 'solid' });
+  rc.line(14*s, 24*s, 22*s, 20*s, { roughness: 1.2, stroke: '#4A7C59', strokeWidth: 1.5 });
+  rc.line(14*s, 24*s, 22*s, 28*s, { roughness: 1.2, stroke: '#4A7C59', strokeWidth: 1.5 });
+  rc.line(26*s, 30*s, 38*s, 30*s, { roughness: 1.2, stroke: '#9B9B9B', strokeWidth: 1 });
+}
+
+function drawTimelineIcon(canvas, w, h) {
+  const rc = RC(canvas); if (!rc) return;
+  canvas.width = w; canvas.height = h;
+  const s = w / 56;
+  rc.line(16*s, 8*s, 16*s, 48*s, { roughness: 1.5, stroke: '#C4956A', strokeWidth: 1.5 });
+  [[16, 14, 8], [16, 26, 8], [16, 38, 8]].forEach(([x, y, r]) => {
+    rc.circle(x*s, y*s, r*s, { roughness: 1.5, stroke: '#4A7C59', strokeWidth: 1.3, fill: '#4A7C59', fillStyle: 'solid' });
+  });
+  [[22, 14, 44, 14], [22, 26, 40, 26], [22, 38, 36, 38]].forEach(([x1,y1,x2,y2]) => {
+    rc.line(x1*s, y1*s, x2*s, y2*s, { roughness: 1.2, stroke: '#9B9B9B', strokeWidth: 0.8 });
+  });
+}
+
+function drawMusicIcon(canvas, w, h) {
+  const rc = RC(canvas); if (!rc) return;
+  canvas.width = w; canvas.height = h;
+  const s = w / 56;
+  rc.line(22*s, 12*s, 22*s, 40*s, { roughness: 1.3, stroke: '#1A1A1A', strokeWidth: 1.5 });
+  rc.line(38*s, 10*s, 38*s, 36*s, { roughness: 1.3, stroke: '#1A1A1A', strokeWidth: 1.5 });
+  rc.ellipse(16*s, 40*s, 14*s, 10*s, { roughness: 1.8, stroke: '#1A1A1A', strokeWidth: 1.3, fill: '#C4956A', fillStyle: 'solid' });
+  rc.ellipse(32*s, 36*s, 14*s, 10*s, { roughness: 1.8, stroke: '#1A1A1A', strokeWidth: 1.3, fill: '#4A7C59', fillStyle: 'solid' });
+  rc.line(22*s, 12*s, 38*s, 10*s, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1.5 });
+}
+
+function drawHelpIcon(canvas, w, h) {
+  const rc = RC(canvas); if (!rc) return;
+  canvas.width = w; canvas.height = h;
+  const s = w / 56;
+  rc.rectangle(8*s, 4*s, 40*s, 48*s, { roughness: 1.8, stroke: '#1A1A1A', strokeWidth: 1.3, fill: '#fff', fillStyle: 'solid' });
+  const ctx = canvas.getContext('2d');
+  ctx.font = `700 ${22*s}px Caveat`; ctx.fillStyle = '#4A7C59';
+  ctx.textAlign = 'center'; ctx.fillText('?', 28*s, 34*s);
+}
+
 /* ─── Desktop Icon Rendering ───────────────────── */
 function renderDesktopIcons() {
   const area = $('#desktopIcons');
@@ -228,9 +337,13 @@ function renderDesktopIcons() {
 
   const icons = [
     { id: 'files', label: 'Files', draw: drawFolderIcon, action: () => openFileExplorer() },
+    { id: 'terminal', label: 'Terminal', draw: drawTerminalIcon, action: () => openTerminal() },
     { id: 'paint', label: 'Paint', draw: drawPaintIcon, action: () => openPaint() },
+    { id: 'timeline', label: 'Timeline', draw: drawTimelineIcon, action: () => openTimeline() },
+    { id: 'music', label: 'Music', draw: drawMusicIcon, action: () => openMusic() },
     { id: 'about', label: 'About Me', draw: drawAboutIcon, action: () => openAbout() },
     { id: 'resume', label: 'Resume', draw: drawResumeIcon, action: () => openResume() },
+    { id: 'help', label: 'Help.txt', draw: drawHelpIcon, action: () => openHelp() },
   ];
 
   icons.forEach(ico => {
@@ -887,6 +1000,376 @@ function initPaintApp(win) {
   });
 }
 
+
+/* ═══ TERMINAL ═════════════════════════════════════ */
+function openTerminal() {
+  const body = `
+    <div class="term-wrap">
+      <div class="term-output" id="termOutput"><span class="term-accent">adrian.os terminal v1.0</span>\n<span class="term-result">Type "help" for a list of commands.\n</span></div>
+      <div class="term-input-row">
+        <span class="term-prompt-label">adrian@portfolio ~$</span>
+        <input class="term-input" id="termInput" type="text" autocomplete="off" autofocus spellcheck="false" />
+      </div>
+    </div>`;
+  createWindow('terminal', 'Terminal', body, 640, 420);
+  const input = $('#termInput');
+  const output = $('#termOutput');
+  if (!input || !output) return;
+  setTimeout(() => input.focus(), 100);
+
+  const cmdHistory = [];
+  let histIdx = -1;
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const cmd = input.value.trim();
+      if (!cmd) return;
+      cmdHistory.unshift(cmd);
+      histIdx = -1;
+      output.innerHTML += `\n<span class="term-prompt">adrian@portfolio ~$ </span><span class="term-cmd">${escHtml(cmd)}</span>\n`;
+      const result = runCommand(cmd);
+      output.innerHTML += result + '\n';
+      input.value = '';
+      output.scrollTop = output.scrollHeight;
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (histIdx < cmdHistory.length - 1) { histIdx++; input.value = cmdHistory[histIdx]; }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (histIdx > 0) { histIdx--; input.value = cmdHistory[histIdx]; }
+      else { histIdx = -1; input.value = ''; }
+    }
+  });
+}
+
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function runCommand(cmd) {
+  const parts = cmd.toLowerCase().split(/\s+/);
+  const c = parts[0];
+  const projects = (typeof siteData !== 'undefined' && siteData.projects) ? siteData.projects : [];
+
+  const commands = {
+    help: () =>
+`<span class="term-heading">Available commands:</span>
+<span class="term-accent">  whoami</span>       <span class="term-result">— who is Adrian?</span>
+<span class="term-accent">  skills</span>       <span class="term-result">— list technical skills</span>
+<span class="term-accent">  projects</span>     <span class="term-result">— list all projects</span>
+<span class="term-accent">  experience</span>   <span class="term-result">— work history</span>
+<span class="term-accent">  education</span>    <span class="term-result">— education background</span>
+<span class="term-accent">  contact</span>      <span class="term-result">— contact information</span>
+<span class="term-accent">  socials</span>      <span class="term-result">— social media links</span>
+<span class="term-accent">  open &lt;app&gt;</span>   <span class="term-result">— open an app (files, paint, timeline, music, about, resume)</span>
+<span class="term-accent">  echo &lt;text&gt;</span>  <span class="term-result">— print text</span>
+<span class="term-accent">  date</span>         <span class="term-result">— current date & time</span>
+<span class="term-accent">  clear</span>        <span class="term-result">— clear terminal</span>
+<span class="term-accent">  neofetch</span>     <span class="term-result">— system info</span>
+<span class="term-accent">  help</span>         <span class="term-result">— show this list</span>`,
+
+    whoami: () =>
+`<span class="term-heading">Adrian Tan</span>
+<span class="term-result">IT student at RMIT with practical experience in CRM administration,
+website maintenance (Shopify, WordPress) and on-page SEO.
+Builder of things. Always learning.</span>`,
+
+    skills: () =>
+`<span class="term-heading">Technical Skills</span>
+<span class="term-accent">  Languages:</span>    <span class="term-result">Java, HTML, CSS, JavaScript</span>
+<span class="term-accent">  Tools:</span>        <span class="term-result">Blender (3D), Shopify, WordPress</span>
+<span class="term-accent">  Other:</span>        <span class="term-result">CRM Administration, SEO, Photography</span>`,
+
+    projects: () => {
+      if (!projects.length) return '<span class="term-result">No projects added yet. Check back soon!</span>';
+      return '<span class="term-heading">Projects</span>\n' + projects.map((p, i) =>
+        `<span class="term-accent">  [${String(i+1).padStart(2,'0')}]</span> <span class="term-result">${escHtml(p.title)} — ${escHtml(p.description || '')}</span>`
+      ).join('\n');
+    },
+
+    experience: () =>
+`<span class="term-heading">Employment History</span>
+
+<span class="term-accent">  IT Intern</span> <span class="term-result">— Andatech, Vermont South</span>
+<span class="term-result">  Sept 2025 — Feb 2026</span>
+<span class="term-result">  Website maintenance, on-page SEO, Shopify & WordPress</span>
+
+<span class="term-accent">  CRM Assistant</span> <span class="term-result">— Andatech, Vermont South</span>
+<span class="term-result">  Jun 2025 — Aug 2026</span>
+<span class="term-result">  CRM database management, automation, data cleaning</span>
+
+<span class="term-accent">  Sales Assistant</span> <span class="term-result">— Andatech, Vermont South</span>
+<span class="term-result">  Nov 2023 — Jun 2025</span>
+<span class="term-result">  POS transactions, customer service, inventory management</span>
+
+<span class="term-accent">  Crew Member</span> <span class="term-result">— McDonald's, Glen Waverley</span>
+<span class="term-result">  May 2023 — Nov 2023</span>
+<span class="term-result">  Food preparation, customer service</span>`,
+
+    education: () =>
+`<span class="term-heading">Education</span>
+<span class="term-accent">  Bachelor of IT</span> <span class="term-result">— RMIT University (2025 — present)</span>
+<span class="term-accent">  VCE</span>             <span class="term-result">— Brentwood Secondary College (2019 — 2024)</span>`,
+
+    contact: () =>
+`<span class="term-heading">Contact</span>
+<span class="term-accent">  Email:</span>    <span class="term-result">adrian@anda.land</span>
+<span class="term-accent">  Phone:</span>    <span class="term-result">0435 833 331</span>
+<span class="term-accent">  Location:</span> <span class="term-result">Glen Waverley, VIC</span>`,
+
+    socials: () =>
+`<span class="term-heading">Socials</span>
+<span class="term-accent">  GitHub:</span>   <span class="term-result">github.com/Huh2006</span>
+<span class="term-accent">  LinkedIn:</span> <span class="term-result">linkedin.com/in/adrian-tan12</span>`,
+
+    date: () => `<span class="term-result">${new Date().toLocaleString()}</span>`,
+
+    clear: () => {
+      setTimeout(() => {
+        const o = $('#termOutput');
+        if (o) o.innerHTML = `<span class="term-accent">adrian.os terminal v1.0</span>\n<span class="term-result">Type "help" for a list of commands.\n</span>`;
+      }, 0);
+      return '';
+    },
+
+    echo: () => `<span class="term-result">${escHtml(cmd.slice(5))}</span>`,
+
+    neofetch: () =>
+`<span class="term-accent">       ___       </span>  <span class="term-heading">adrian@portfolio</span>
+<span class="term-accent">      /   \\      </span>  <span class="term-result">──────────────────</span>
+<span class="term-accent">     / .   \\     </span>  <span class="term-accent">OS:</span>     <span class="term-result">adrian.os v1.0</span>
+<span class="term-accent">    /  ___  \\    </span>  <span class="term-accent">Shell:</span>  <span class="term-result">portfolio-term</span>
+<span class="term-accent">   /  /   \\  \\   </span>  <span class="term-accent">Theme:</span>  <span class="term-result">hand-drawn (light)</span>
+<span class="term-accent">  /__/     \\__\\  </span>  <span class="term-accent">Engine:</span> <span class="term-result">Rough.js + Canvas</span>
+<span class="term-accent">                 </span>  <span class="term-accent">Font:</span>   <span class="term-result">Caveat / DM Sans</span>`,
+
+    open: () => {
+      const app = parts[1];
+      const appMap = { files: openFileExplorer, paint: openPaint, timeline: openTimeline, music: openMusic, about: openAbout, resume: openResume, help: openHelp };
+      if (app && appMap[app]) { setTimeout(appMap[app], 100); return `<span class="term-result">Opening ${app}...</span>`; }
+      return `<span class="term-error">Usage: open &lt;files|paint|timeline|music|about|resume|help&gt;</span>`;
+    },
+  };
+
+  if (commands[c]) return commands[c]();
+  return `<span class="term-error">Command not found: ${escHtml(c)}. Type "help" for available commands.</span>`;
+}
+
+/* ═══ TIMELINE ═════════════════════════════════════ */
+function openTimeline() {
+  const entries = [
+    { date: '2025 — Present', title: 'Bachelor of IT', place: 'RMIT University', desc: 'Currently studying Information Technology, building skills in software development, networking, and system design.', current: true },
+    { date: 'Sept 2025 — Feb 2026', title: 'IT Intern', place: 'Andatech — Vermont South', desc: 'Maintained and optimised company websites through on-page SEO, content updates and technical fixes. Monitored website performance and analytics. Updated pages on Shopify and WordPress.' },
+    { date: 'Jun 2025 — Aug 2026', title: 'CRM Assistant', place: 'Andatech — Vermont South', desc: 'Maintained CRM database accuracy by cleaning, deduplicating and segmenting customer records. Assisted in CRM migration, supported automation for lead follow-up.' },
+    { date: 'Nov 2023 — Jun 2025', title: 'Sales Assistant', place: 'Andatech — Vermont South', desc: 'Processed POS transactions, managed stock room, provided in-store customer service, assisted with online order packing.' },
+    { date: 'May 2023 — Nov 2023', title: 'Crew Member', place: "McDonald's — Glen Waverley", desc: 'Prepared food to safety standards, operated POS system, maintained cleanliness.' },
+    { date: '2019 — 2024', title: 'VCE', place: 'Brentwood Secondary College', desc: 'Completed Victorian Certificate of Education.' },
+  ];
+
+  let html = '<div class="timeline-wrap">';
+  entries.forEach((e, i) => {
+    html += `
+      <div class="tl-item${e.current ? ' current' : ''}" style="animation-delay:${i * 0.12}s">
+        <div class="tl-date">${e.date}</div>
+        <div class="tl-title">${e.title}</div>
+        <div class="tl-place">${e.place}</div>
+        <div class="tl-desc">${e.desc}</div>
+      </div>`;
+  });
+  html += '</div>';
+
+  createWindow('timeline', 'Timeline', html, 560, 500);
+}
+
+/* ═══ MUSIC PLAYER ═════════════════════════════════ */
+const musicTracks = [
+  { title: 'Morning Sketch', artist: 'Lofi Adrian', bpm: 85, dur: 187 },
+  { title: 'Compile & Chill', artist: 'Lofi Adrian', bpm: 90, dur: 214 },
+  { title: 'Late Night Debug', artist: 'Lofi Adrian', bpm: 78, dur: 196 },
+];
+
+let musicState = { playing: false, trackIdx: 0, elapsed: 0, interval: null };
+
+function openMusic() {
+  const t = musicTracks[musicState.trackIdx];
+  let playlistHtml = '<div class="music-playlist">';
+  musicTracks.forEach((tr, i) => {
+    playlistHtml += `<div class="music-track${i === musicState.trackIdx ? ' active' : ''}" data-idx="${i}">
+      <span class="music-track-num">${i+1}.</span>${tr.title}</div>`;
+  });
+  playlistHtml += '</div>';
+
+  const body = `
+    <div class="music-wrap">
+      <div class="music-art"><canvas id="musicArtCanvas" width="160" height="160"></canvas></div>
+      <div class="music-title" id="musicTitle">${t.title}</div>
+      <div class="music-artist" id="musicArtist">${t.artist}</div>
+      <div class="music-progress"><div class="music-progress-bar" id="musicBar"></div></div>
+      <div class="music-time" id="musicTime">${fmtTime(musicState.elapsed)} / ${fmtTime(t.dur)}</div>
+      <div class="music-controls">
+        <button class="music-btn prev" id="musicPrev" title="Previous">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 3L6 8l6 5V3zM4 3v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="music-btn play${musicState.playing ? ' playing' : ''}" id="musicPlay" title="Play/Pause">
+          <svg id="playIcon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            ${musicState.playing
+              ? '<rect x="5" y="4" width="3" height="12" rx="1" fill="currentColor"/><rect x="12" y="4" width="3" height="12" rx="1" fill="currentColor"/>'
+              : '<path d="M6 4l10 6-10 6V4z" fill="currentColor"/>'}
+          </svg>
+        </button>
+        <button class="music-btn next" id="musicNext" title="Next">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 3l6 5-6 5V3zM12 3v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      ${playlistHtml}
+    </div>`;
+
+  createWindow('music', 'Music Player', body, 340, 480);
+
+  // Draw album art
+  setTimeout(() => {
+    const artC = $('#musicArtCanvas');
+    if (artC) drawAlbumArt(artC, musicState.trackIdx);
+  }, 50);
+
+  // Wire buttons
+  setTimeout(() => {
+    const playBtn = $('#musicPlay');
+    if (playBtn) playBtn.onclick = toggleMusic;
+    const prevBtn = $('#musicPrev');
+    if (prevBtn) prevBtn.onclick = () => switchTrack(musicState.trackIdx - 1);
+    const nextBtn = $('#musicNext');
+    if (nextBtn) nextBtn.onclick = () => switchTrack(musicState.trackIdx + 1);
+
+    document.querySelectorAll('.music-track').forEach(tr => {
+      tr.onclick = () => switchTrack(parseInt(tr.dataset.idx));
+    });
+  }, 50);
+
+  // Kick off ticker if already playing
+  if (musicState.playing) startMusicTick();
+}
+
+function drawAlbumArt(canvas, idx) {
+  const rc = RC(canvas); if (!rc) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, 160, 160);
+  const colors = [['#4A7C59','#C4956A','#3a6fbf'], ['#e55','#4A7C59','#9b59b6'], ['#3a6fbf','#C4956A','#e55']];
+  const c = colors[idx % 3];
+  rc.rectangle(4, 4, 152, 152, { roughness: 2, stroke: '#1A1A1A', strokeWidth: 1.5, fill: '#F7F5F0', fillStyle: 'solid' });
+  rc.circle(80, 80, 90, { roughness: 2.5, stroke: c[0], strokeWidth: 1.5 });
+  rc.circle(80, 80, 50, { roughness: 2, stroke: c[1], strokeWidth: 1.3 });
+  rc.circle(80, 80, 16, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1.3, fill: '#1A1A1A', fillStyle: 'solid' });
+  // Note symbol
+  ctx.font = '700 18px Caveat'; ctx.fillStyle = c[2]; ctx.globalAlpha = 0.6;
+  ctx.fillText('♪', 112, 40); ctx.fillText('♫', 30, 130); ctx.globalAlpha = 1;
+}
+
+function fmtTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2, '0')}`;
+}
+
+function toggleMusic() {
+  musicState.playing = !musicState.playing;
+  if (musicState.playing) startMusicTick();
+  else stopMusicTick();
+  updateMusicUI();
+}
+
+function startMusicTick() {
+  stopMusicTick();
+  musicState.interval = setInterval(() => {
+    const t = musicTracks[musicState.trackIdx];
+    musicState.elapsed += 1;
+    if (musicState.elapsed >= t.dur) {
+      switchTrack(musicState.trackIdx + 1);
+      return;
+    }
+    updateMusicProgress();
+  }, 1000);
+}
+
+function stopMusicTick() {
+  if (musicState.interval) { clearInterval(musicState.interval); musicState.interval = null; }
+}
+
+function switchTrack(idx) {
+  if (idx < 0) idx = musicTracks.length - 1;
+  if (idx >= musicTracks.length) idx = 0;
+  musicState.trackIdx = idx;
+  musicState.elapsed = 0;
+  if (musicState.playing) { stopMusicTick(); startMusicTick(); }
+  updateMusicUI();
+  const artC = $('#musicArtCanvas');
+  if (artC) drawAlbumArt(artC, idx);
+}
+
+function updateMusicUI() {
+  const t = musicTracks[musicState.trackIdx];
+  const title = $('#musicTitle'); if (title) title.textContent = t.title;
+  const artist = $('#musicArtist'); if (artist) artist.textContent = t.artist;
+  const playBtn = $('#musicPlay');
+  if (playBtn) {
+    playBtn.classList.toggle('playing', musicState.playing);
+    const icon = playBtn.querySelector('svg');
+    if (icon) icon.innerHTML = musicState.playing
+      ? '<rect x="5" y="4" width="3" height="12" rx="1" fill="currentColor"/><rect x="12" y="4" width="3" height="12" rx="1" fill="currentColor"/>'
+      : '<path d="M6 4l10 6-10 6V4z" fill="currentColor"/>';
+  }
+  document.querySelectorAll('.music-track').forEach((tr, i) => {
+    tr.classList.toggle('active', i === musicState.trackIdx);
+  });
+  updateMusicProgress();
+}
+
+function updateMusicProgress() {
+  const t = musicTracks[musicState.trackIdx];
+  const bar = $('#musicBar');
+  if (bar) bar.style.width = (musicState.elapsed / t.dur * 100) + '%';
+  const time = $('#musicTime');
+  if (time) time.textContent = `${fmtTime(musicState.elapsed)} / ${fmtTime(t.dur)}`;
+}
+
+/* ═══ HELP FILE ════════════════════════════════════ */
+function openHelp() {
+  const body = `
+    <div class="notepad-body" style="padding:24px 28px;line-height:1.8">
+      <h2 style="font-size:32px;margin-bottom:4px">How to Use Terminal</h2>
+      <p style="color:var(--ink-light);margin-bottom:20px">A quick guide to the adrian.os terminal</p>
+
+      <h3 style="color:var(--ink)">Getting Started</h3>
+      <p>Double-click the <strong>Terminal</strong> icon on the desktop to open it.
+      You'll see a command prompt where you can type commands and press Enter.</p>
+
+      <h3 style="color:var(--ink)">Commands</h3>
+      <table style="width:100%;border-collapse:collapse;margin:8px 0 16px">
+        <tr style="border-bottom:1px solid var(--rule)"><td style="padding:6px 12px 6px 0;color:#4A7C59;font-weight:600">whoami</td><td style="padding:6px 0">Learn about Adrian</td></tr>
+        <tr style="border-bottom:1px solid var(--rule)"><td style="padding:6px 12px 6px 0;color:#4A7C59;font-weight:600">skills</td><td style="padding:6px 0">See technical skills</td></tr>
+        <tr style="border-bottom:1px solid var(--rule)"><td style="padding:6px 12px 6px 0;color:#4A7C59;font-weight:600">projects</td><td style="padding:6px 0">List all projects</td></tr>
+        <tr style="border-bottom:1px solid var(--rule)"><td style="padding:6px 12px 6px 0;color:#4A7C59;font-weight:600">experience</td><td style="padding:6px 0">Work history</td></tr>
+        <tr style="border-bottom:1px solid var(--rule)"><td style="padding:6px 12px 6px 0;color:#4A7C59;font-weight:600">education</td><td style="padding:6px 0">Education info</td></tr>
+        <tr style="border-bottom:1px solid var(--rule)"><td style="padding:6px 12px 6px 0;color:#4A7C59;font-weight:600">contact</td><td style="padding:6px 0">Contact details</td></tr>
+        <tr style="border-bottom:1px solid var(--rule)"><td style="padding:6px 12px 6px 0;color:#4A7C59;font-weight:600">socials</td><td style="padding:6px 0">Social media links</td></tr>
+        <tr style="border-bottom:1px solid var(--rule)"><td style="padding:6px 12px 6px 0;color:#4A7C59;font-weight:600">open &lt;app&gt;</td><td style="padding:6px 0">Open any desktop app</td></tr>
+        <tr style="border-bottom:1px solid var(--rule)"><td style="padding:6px 12px 6px 0;color:#4A7C59;font-weight:600">neofetch</td><td style="padding:6px 0">System info</td></tr>
+        <tr style="border-bottom:1px solid var(--rule)"><td style="padding:6px 12px 6px 0;color:#4A7C59;font-weight:600">date</td><td style="padding:6px 0">Current date & time</td></tr>
+        <tr style="border-bottom:1px solid var(--rule)"><td style="padding:6px 12px 6px 0;color:#4A7C59;font-weight:600">echo &lt;text&gt;</td><td style="padding:6px 0">Print text back</td></tr>
+        <tr><td style="padding:6px 12px 6px 0;color:#4A7C59;font-weight:600">clear</td><td style="padding:6px 0">Clear the screen</td></tr>
+      </table>
+
+      <h3 style="color:var(--ink)">Tips</h3>
+      <p>· Use <strong>↑ / ↓ arrow keys</strong> to scroll through command history<br>
+         · Try <strong>open paint</strong> to launch Paint from the terminal<br>
+         · Commands are case-insensitive</p>
+
+      <h3 style="color:var(--ink)">About This Desktop</h3>
+      <p>This portfolio is built as a hand-drawn desktop operating system.
+      Everything is rendered using <strong>Rough.js</strong> and the HTML Canvas API
+      to create a unique sketchbook aesthetic. Each element is slightly
+      different every time — just like real pencil drawings.</p>
+    </div>`;
+  createWindow('help', 'Help.txt', body, 520, 480);
+}
 
 /* ═══ EXPOSE FOR ADMIN ═════════════════════════════ */
 window.isAdmin = window.isAdmin || (() => false);

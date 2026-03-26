@@ -19,8 +19,21 @@
     </filter>
   </svg>
 
+  <!-- ═══ BOOT SCREEN ═══ -->
+  <div id="bootScreen">
+    <div class="boot-inner">
+      <canvas id="bootLogo" width="60" height="60"></canvas>
+      <div class="boot-title">adrian<span class="dot">.</span>os</div>
+      <div class="boot-lines" id="bootLines"></div>
+      <div class="boot-bar-wrap">
+        <div class="boot-bar" id="bootBar"></div>
+      </div>
+      <div class="boot-ver">v1.0.0 — built with care</div>
+    </div>
+  </div>
+
   <!-- ═══ HERO / LANDING ═══ -->
-  <div id="heroWrap">
+  <div id="heroWrap" class="hidden">
     <canvas id="trailCanvas"></canvas>
     <div class="hero-left">
       <div class="hero-eyebrow anim-in" style="--d:0">
