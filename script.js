@@ -2437,12 +2437,29 @@ function renderGuestbook() {
     container.innerHTML = '<div class="gb-empty">No entries yet. Be the first!</div>';
     return;
   }
-  container.innerHTML = entries.map(e => `
+  const isAdm = typeof window.isAdmin === 'function' && window.isAdmin();
+  container.innerHTML = entries.map((e, i) => `
     <div class="gb-entry">
-      <span class="gb-name">${e.name.replace(/</g,'&lt;')}</span>
-      <span class="gb-time">${e.time}</span>
+      <div class="gb-entry-top">
+        <span class="gb-name">${e.name.replace(/</g,'&lt;')}</span>
+        <span class="gb-time">${e.time}</span>
+        ${isAdm ? `<button class="gb-del" data-gb-idx="${i}" title="Delete">✕</button>` : ''}
+      </div>
       <p class="gb-msg">${e.msg.replace(/</g,'&lt;')}</p>
     </div>`).join('');
+
+  // Admin delete buttons
+  if (isAdm) {
+    container.querySelectorAll('.gb-del').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.gbIdx);
+        const entries = JSON.parse(localStorage.getItem('guestbook-entries') || '[]');
+        entries.splice(idx, 1);
+        localStorage.setItem('guestbook-entries', JSON.stringify(entries));
+        renderGuestbook();
+      });
+    });
+  }
 }
 
 /* ═══ TRASH ════════════════════════════════════════ */
@@ -2529,36 +2546,67 @@ function openSettings() {
 }
 
 /* ═══ PHOTOS ═══════════════════════════════════════ */
+const defaultPhotos = [
+  { caption: 'Sunset', fill: '#C4956A', accent: '#e55' },
+  { caption: 'Mountains', fill: '#4A7C59', accent: '#9B9B9B' },
+  { caption: 'City Lights', fill: '#1A1A1A', accent: '#f0c040' },
+  { caption: 'Ocean', fill: '#3a6fbf', accent: '#87CEEB' },
+  { caption: 'Forest', fill: '#4A7C59', accent: '#2d5a3f' },
+  { caption: 'Abstract', fill: '#9b59b6', accent: '#C4956A' },
+];
+
+function getUploadedPhotos() {
+  return JSON.parse(localStorage.getItem('portfolio-photos') || '[]');
+}
+function saveUploadedPhotos(arr) {
+  localStorage.setItem('portfolio-photos', JSON.stringify(arr));
+}
+
 function openPhotos() {
-  const photos = [
-    { caption: 'Sunset', fill: '#C4956A', accent: '#e55' },
-    { caption: 'Mountains', fill: '#4A7C59', accent: '#9B9B9B' },
-    { caption: 'City Lights', fill: '#1A1A1A', accent: '#f0c040' },
-    { caption: 'Ocean', fill: '#3a6fbf', accent: '#87CEEB' },
-    { caption: 'Forest', fill: '#4A7C59', accent: '#2d5a3f' },
-    { caption: 'Abstract', fill: '#9b59b6', accent: '#C4956A' },
-  ];
-  let html = '<div class="photos-grid">';
-  photos.forEach((p, i) => {
+  const isAdm = typeof window.isAdmin === 'function' && window.isAdmin();
+  const uploaded = getUploadedPhotos();
+
+  let html = '';
+  if (isAdm) {
+    html += `<div class="photos-admin-bar">
+      <button class="gb-sign" id="photosAddBtn">+ Add Image</button>
+      <input type="file" id="photosFileInput" accept="image/*" style="display:none">
+    </div>`;
+  }
+  html += '<div class="photos-grid" id="photosGrid">';
+
+  // Uploaded images first
+  uploaded.forEach((p, i) => {
     html += `
-      <div class="photo-polaroid" data-photo-idx="${i}">
+      <div class="photo-polaroid photo-real" data-uploaded-idx="${i}">
+        <img src="${p.data}" alt="${p.caption}" style="width:132px;height:90px;object-fit:cover;border-radius:2px;">
+        <span class="photo-caption">${p.caption.replace(/</g,'&lt;')}</span>
+        ${isAdm ? `<button class="photo-del" data-del-idx="${i}" title="Delete">✕</button>` : ''}
+      </div>`;
+  });
+
+  // Default sketch photos
+  defaultPhotos.forEach((p, i) => {
+    html += `
+      <div class="photo-polaroid photo-sketch" data-photo-idx="${i}">
         <canvas width="140" height="120" data-photo-idx="${i}"></canvas>
         <span class="photo-caption">${p.caption}</span>
       </div>`;
   });
   html += '</div>';
-  createWindow('photos', 'Photos', 440, 400, html, {
+
+  createWindow('photos', 'Photos', 460, 440, html, {
     onReady: (win) => {
-      win.querySelectorAll('.photo-polaroid canvas').forEach(cvs => {
+      // Draw sketch photos
+      win.querySelectorAll('.photo-sketch canvas').forEach(cvs => {
         const idx = parseInt(cvs.dataset.photoIdx);
-        const p = photos[idx];
+        const p = defaultPhotos[idx];
         function drawPhoto() {
           const rc = RC(cvs); if (!rc) return;
           const ctx = cvs.getContext('2d');
           ctx.clearRect(0, 0, 140, 120);
           rc.rectangle(4, 4, 132, 112, { roughness: 1.8, stroke: '#1A1A1A', strokeWidth: 1, fill: '#fff', fillStyle: 'solid' });
           rc.rectangle(12, 10, 116, 80, { roughness: 1.5, stroke: '#9B9B9B', strokeWidth: 0.8, fill: p.fill, fillStyle: 'solid', fillWeight: 0.5 });
-          // Mountain/sun scene
           rc.line(12, 80, 50, 40, { roughness: 1.5, stroke: p.accent, strokeWidth: 1.2 });
           rc.line(50, 40, 80, 65, { roughness: 1.5, stroke: p.accent, strokeWidth: 1.2 });
           rc.line(80, 65, 128, 35, { roughness: 1.5, stroke: p.accent, strokeWidth: 1.2 });
@@ -2568,10 +2616,11 @@ function openPhotos() {
         markWriggle(cvs, drawPhoto);
       });
 
-      win.querySelectorAll('.photo-polaroid').forEach(el => {
+      // Click sketch photos to enlarge
+      win.querySelectorAll('.photo-sketch').forEach(el => {
         el.addEventListener('click', () => {
           const idx = parseInt(el.dataset.photoIdx);
-          const p = photos[idx];
+          const p = defaultPhotos[idx];
           const bigBody = `<div class="photo-big"><canvas id="photoBig${idx}" width="380" height="280"></canvas></div>`;
           createWindow('photo-' + idx, p.caption, 420, 340, bigBody, {
             onReady: () => {
@@ -2595,6 +2644,56 @@ function openPhotos() {
           });
         });
       });
+
+      // Click uploaded photos to enlarge
+      win.querySelectorAll('.photo-real').forEach(el => {
+        el.addEventListener('click', (e) => {
+          if (e.target.classList.contains('photo-del')) return;
+          const idx = parseInt(el.dataset.uploadedIdx);
+          const p = getUploadedPhotos()[idx];
+          if (!p) return;
+          const bigBody = `<div class="photo-big"><img src="${p.data}" alt="${p.caption}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:4px;"></div>`;
+          createWindow('uphoto-' + idx, p.caption, 500, 400, bigBody);
+        });
+      });
+
+      // Admin: add image button
+      if (isAdm) {
+        const addBtn = win.querySelector('#photosAddBtn');
+        const fileInput = win.querySelector('#photosFileInput');
+        if (addBtn && fileInput) {
+          addBtn.addEventListener('click', () => fileInput.click());
+          fileInput.addEventListener('change', () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+            const caption = prompt('Caption for this image:', file.name.replace(/\.[^.]+$/, ''));
+            if (!caption) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const photos = getUploadedPhotos();
+              photos.push({ caption, data: e.target.result });
+              saveUploadedPhotos(photos);
+              // Reopen to refresh
+              closeWindow('photos');
+              setTimeout(() => openPhotos(), 100);
+            };
+            reader.readAsDataURL(file);
+          });
+        }
+
+        // Admin: delete uploaded photos
+        win.querySelectorAll('.photo-del').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const idx = parseInt(btn.dataset.delIdx);
+            const photos = getUploadedPhotos();
+            photos.splice(idx, 1);
+            saveUploadedPhotos(photos);
+            closeWindow('photos');
+            setTimeout(() => openPhotos(), 100);
+          });
+        });
+      }
     }
   });
 }
