@@ -11,7 +11,7 @@ const RC = (c) => typeof rough !== 'undefined' ? rough.canvas(c) : null;
    Rough.js randomness makes each redraw slightly different
    → living, breathing sketch effect.
    ═══════════════════════════════════════════════════ */
-const WRIGGLE_FPS = 8; // redraws per second (smooth wiggle without killing CPU)
+let WRIGGLE_FPS = 8; // redraws per second (smooth wiggle without killing CPU)
 let _wriggleRunning = false;
 let _wriggleLast = 0;
 
@@ -436,6 +436,163 @@ function drawHelpIcon(canvas, w, h) {
   ctx.textAlign = 'center'; ctx.fillText('?', 28*s, 34*s);
 }
 
+function drawEtchIcon(canvas, w, h) {
+  const rc = RC(canvas); if (!rc) return;
+  canvas.width = w; canvas.height = h;
+  const s = w / 56;
+  rc.rectangle(6*s, 4*s, 44*s, 40*s, { roughness: 1.8, stroke: '#C4956A', strokeWidth: 1.3, fill: '#e8e3d9', fillStyle: 'solid' });
+  rc.line(14*s, 16*s, 20*s, 24*s, { roughness: 1.5, stroke: '#4A7C59', strokeWidth: 1.2 });
+  rc.line(20*s, 24*s, 26*s, 16*s, { roughness: 1.5, stroke: '#4A7C59', strokeWidth: 1.2 });
+  rc.line(26*s, 16*s, 32*s, 24*s, { roughness: 1.5, stroke: '#4A7C59', strokeWidth: 1.2 });
+  rc.line(32*s, 24*s, 38*s, 16*s, { roughness: 1.5, stroke: '#4A7C59', strokeWidth: 1.2 });
+  rc.circle(18*s, 46*s, 8*s, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1.2 });
+  rc.circle(38*s, 46*s, 8*s, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1.2 });
+}
+
+function drawMinesweeperIcon(canvas, w, h) {
+  const rc = RC(canvas); if (!rc) return;
+  canvas.width = w; canvas.height = h;
+  const s = w / 56;
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) {
+    rc.rectangle((10 + c*14)*s, (10 + r*14)*s, 12*s, 12*s, { roughness: 1.5, stroke: '#9B9B9B', strokeWidth: 0.8 });
+  }
+  rc.circle(30*s, 30*s, 8*s, { roughness: 1.8, stroke: '#1A1A1A', strokeWidth: 1.3, fill: '#1A1A1A', fillStyle: 'solid' });
+}
+
+function drawSnakeIcon(canvas, w, h) {
+  const rc = RC(canvas); if (!rc) return;
+  canvas.width = w; canvas.height = h;
+  const s = w / 56;
+  rc.line(10*s, 18*s, 18*s, 34*s, { roughness: 1.5, stroke: '#4A7C59', strokeWidth: 2 });
+  rc.line(18*s, 34*s, 26*s, 18*s, { roughness: 1.5, stroke: '#4A7C59', strokeWidth: 2 });
+  rc.line(26*s, 18*s, 34*s, 34*s, { roughness: 1.5, stroke: '#4A7C59', strokeWidth: 2 });
+  rc.line(34*s, 34*s, 42*s, 18*s, { roughness: 1.5, stroke: '#4A7C59', strokeWidth: 2 });
+  rc.circle(46*s, 40*s, 8*s, { roughness: 1.5, stroke: '#e55', strokeWidth: 1.2, fill: '#e55', fillStyle: 'solid' });
+}
+
+function drawDressUpIcon(canvas, w, h) {
+  const rc = RC(canvas); if (!rc) return;
+  canvas.width = w; canvas.height = h;
+  const s = w / 56;
+  rc.circle(28*s, 14*s, 10*s, { roughness: 1.8, stroke: '#1A1A1A', strokeWidth: 1.3 });
+  rc.line(28*s, 20*s, 28*s, 36*s, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1.3 });
+  rc.line(28*s, 26*s, 18*s, 32*s, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1.3 });
+  rc.line(28*s, 26*s, 38*s, 32*s, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1.3 });
+  rc.line(28*s, 36*s, 20*s, 48*s, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1.3 });
+  rc.line(28*s, 36*s, 36*s, 48*s, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1.3 });
+  rc.linearPath([[20*s, 8*s], [28*s, 2*s], [36*s, 8*s]], { roughness: 1.5, stroke: '#C4956A', strokeWidth: 1.3 });
+}
+
+function draw8BallIcon(canvas, w, h) {
+  const rc = RC(canvas); if (!rc) return;
+  canvas.width = w; canvas.height = h;
+  const s = w / 56;
+  rc.circle(28*s, 28*s, 40*s, { roughness: 1.8, stroke: '#1A1A1A', strokeWidth: 1.5, fill: '#1A1A1A', fillStyle: 'solid' });
+  const ctx = canvas.getContext('2d');
+  ctx.font = `700 ${14*s}px Caveat`; ctx.fillStyle = '#FFFFFF';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('8', 28*s, 30*s);
+}
+
+function drawCalcIcon(canvas, w, h) {
+  const rc = RC(canvas); if (!rc) return;
+  canvas.width = w; canvas.height = h;
+  const s = w / 56;
+  rc.rectangle(10*s, 4*s, 36*s, 48*s, { roughness: 1.8, stroke: '#1A1A1A', strokeWidth: 1.3, fill: '#fff', fillStyle: 'solid' });
+  rc.line(10*s, 18*s, 46*s, 18*s, { roughness: 1, stroke: '#9B9B9B', strokeWidth: 0.8 });
+  rc.line(10*s, 30*s, 46*s, 30*s, { roughness: 1, stroke: '#9B9B9B', strokeWidth: 0.8 });
+  rc.line(10*s, 40*s, 46*s, 40*s, { roughness: 1, stroke: '#9B9B9B', strokeWidth: 0.8 });
+  rc.line(22*s, 18*s, 22*s, 52*s, { roughness: 1, stroke: '#9B9B9B', strokeWidth: 0.8 });
+  rc.line(34*s, 18*s, 34*s, 52*s, { roughness: 1, stroke: '#9B9B9B', strokeWidth: 0.8 });
+  const ctx = canvas.getContext('2d');
+  ctx.font = `700 ${10*s}px Caveat`; ctx.fillStyle = '#4A7C59';
+  ctx.textAlign = 'center'; ctx.fillText('=', 28*s, 14*s);
+}
+
+function drawNotepadIcon(canvas, w, h) {
+  const rc = RC(canvas); if (!rc) return;
+  canvas.width = w; canvas.height = h;
+  const s = w / 56;
+  rc.rectangle(8*s, 4*s, 36*s, 48*s, { roughness: 1.8, stroke: '#1A1A1A', strokeWidth: 1.3, fill: '#fff', fillStyle: 'solid' });
+  [[16, 16, 36, 16], [16, 24, 34, 24], [16, 32, 32, 32], [16, 40, 30, 40]].forEach(([x1, y1, x2, y2]) => {
+    rc.line(x1*s, y1*s, x2*s, y2*s, { roughness: 1.2, stroke: '#9B9B9B', strokeWidth: 0.8 });
+  });
+  rc.line(46*s, 8*s, 46*s, 44*s, { roughness: 1.5, stroke: '#C4956A', strokeWidth: 1.2 });
+}
+
+function drawWeatherIcon(canvas, w, h) {
+  const rc = RC(canvas); if (!rc) return;
+  canvas.width = w; canvas.height = h;
+  const s = w / 56;
+  rc.circle(28*s, 28*s, 20*s, { roughness: 1.8, stroke: '#C4956A', strokeWidth: 1.5, fill: '#ffd', fillStyle: 'solid' });
+  [[28, 10, 28, 4], [28, 46, 28, 52], [10, 28, 4, 28], [46, 28, 52, 28],
+   [16, 16, 12, 12], [40, 16, 44, 12], [16, 40, 12, 44], [40, 40, 44, 44]].forEach(([x1, y1, x2, y2]) => {
+    rc.line(x1*s, y1*s, x2*s, y2*s, { roughness: 1.2, stroke: '#C4956A', strokeWidth: 1 });
+  });
+}
+
+function drawClockIcon(canvas, w, h) {
+  const rc = RC(canvas); if (!rc) return;
+  canvas.width = w; canvas.height = h;
+  const s = w / 56;
+  rc.circle(28*s, 28*s, 40*s, { roughness: 1.8, stroke: '#1A1A1A', strokeWidth: 1.3 });
+  rc.line(28*s, 28*s, 28*s, 14*s, { roughness: 1.2, stroke: '#1A1A1A', strokeWidth: 1.5 });
+  rc.line(28*s, 28*s, 38*s, 28*s, { roughness: 1.2, stroke: '#1A1A1A', strokeWidth: 1.3 });
+  [[28, 10], [46, 28], [28, 46], [10, 28]].forEach(([x, y]) => {
+    rc.circle(x*s, y*s, 3*s, { roughness: 1, stroke: '#4A7C59', fill: '#4A7C59', fillStyle: 'solid', strokeWidth: 0.8 });
+  });
+}
+
+function drawLinksIcon(canvas, w, h) {
+  const rc = RC(canvas); if (!rc) return;
+  canvas.width = w; canvas.height = h;
+  const s = w / 56;
+  rc.rectangle(8*s, 16*s, 24*s, 24*s, { roughness: 1.8, stroke: '#3a6fbf', strokeWidth: 1.5 });
+  rc.rectangle(24*s, 16*s, 24*s, 24*s, { roughness: 1.8, stroke: '#4A7C59', strokeWidth: 1.5 });
+}
+
+function drawGuestbookIcon(canvas, w, h) {
+  const rc = RC(canvas); if (!rc) return;
+  canvas.width = w; canvas.height = h;
+  const s = w / 56;
+  rc.rectangle(6*s, 8*s, 22*s, 40*s, { roughness: 1.8, stroke: '#C4956A', strokeWidth: 1.3, fill: '#fff', fillStyle: 'solid' });
+  rc.rectangle(28*s, 8*s, 22*s, 40*s, { roughness: 1.8, stroke: '#C4956A', strokeWidth: 1.3, fill: '#fff', fillStyle: 'solid' });
+  rc.line(28*s, 8*s, 28*s, 48*s, { roughness: 1.5, stroke: '#C4956A', strokeWidth: 1.5 });
+}
+
+function drawTrashIcon(canvas, w, h) {
+  const rc = RC(canvas); if (!rc) return;
+  canvas.width = w; canvas.height = h;
+  const s = w / 56;
+  rc.rectangle(14*s, 8*s, 28*s, 6*s, { roughness: 1.5, stroke: '#9B9B9B', strokeWidth: 1.3 });
+  rc.linearPath([[10*s, 14*s], [14*s, 48*s], [42*s, 48*s], [46*s, 14*s]], { roughness: 1.8, stroke: '#9B9B9B', strokeWidth: 1.3 });
+  rc.line(22*s, 20*s, 22*s, 42*s, { roughness: 1.2, stroke: '#9B9B9B', strokeWidth: 0.8 });
+  rc.line(28*s, 20*s, 28*s, 42*s, { roughness: 1.2, stroke: '#9B9B9B', strokeWidth: 0.8 });
+  rc.line(34*s, 20*s, 34*s, 42*s, { roughness: 1.2, stroke: '#9B9B9B', strokeWidth: 0.8 });
+}
+
+function drawSettingsIcon(canvas, w, h) {
+  const rc = RC(canvas); if (!rc) return;
+  canvas.width = w; canvas.height = h;
+  const s = w / 56;
+  rc.circle(28*s, 28*s, 22*s, { roughness: 1.8, stroke: '#1A1A1A', strokeWidth: 1.3 });
+  rc.rectangle(24*s, 4*s, 8*s, 10*s, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1 });
+  rc.rectangle(24*s, 42*s, 8*s, 10*s, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1 });
+  rc.rectangle(4*s, 24*s, 10*s, 8*s, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1 });
+  rc.rectangle(42*s, 24*s, 10*s, 8*s, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1 });
+}
+
+function drawPhotosIcon(canvas, w, h) {
+  const rc = RC(canvas); if (!rc) return;
+  canvas.width = w; canvas.height = h;
+  const s = w / 56;
+  rc.rectangle(14*s, 4*s, 36*s, 36*s, { roughness: 1.8, stroke: '#9B9B9B', strokeWidth: 1, fill: '#fff', fillStyle: 'solid' });
+  rc.rectangle(6*s, 12*s, 36*s, 36*s, { roughness: 1.8, stroke: '#1A1A1A', strokeWidth: 1.3, fill: '#fff', fillStyle: 'solid' });
+  rc.circle(18*s, 24*s, 8*s, { roughness: 1.5, stroke: '#C4956A', strokeWidth: 1, fill: '#ffd', fillStyle: 'solid' });
+  rc.line(6*s, 40*s, 20*s, 30*s, { roughness: 1.5, stroke: '#4A7C59', strokeWidth: 1.2 });
+  rc.line(20*s, 30*s, 30*s, 38*s, { roughness: 1.5, stroke: '#4A7C59', strokeWidth: 1.2 });
+  rc.line(30*s, 38*s, 42*s, 28*s, { roughness: 1.5, stroke: '#4A7C59', strokeWidth: 1.2 });
+}
+
 /* ─── Desktop Icon Rendering ───────────────────── */
 function renderDesktopIcons() {
   const area = $('#desktopIcons');
@@ -450,6 +607,20 @@ function renderDesktopIcons() {
     { id: 'about', label: 'About Me', draw: drawAboutIcon, action: () => openAbout() },
     { id: 'resume', label: 'Resume', draw: drawResumeIcon, action: () => openResume() },
     { id: 'help', label: 'Help.txt', draw: drawHelpIcon, action: () => openHelp() },
+    { id: 'etch', label: 'Etch-a-Sketch', draw: drawEtchIcon, action: () => openEtch() },
+    { id: 'minesweeper', label: 'Minesweeper', draw: drawMinesweeperIcon, action: () => openMinesweeper() },
+    { id: 'snake', label: 'Snake', draw: drawSnakeIcon, action: () => openSnake() },
+    { id: 'dressup', label: 'Dress Up', draw: drawDressUpIcon, action: () => openDressUp() },
+    { id: '8ball', label: '8-Ball', draw: draw8BallIcon, action: () => open8Ball() },
+    { id: 'calc', label: 'Calculator', draw: drawCalcIcon, action: () => openCalc() },
+    { id: 'notepad', label: 'Notepad', draw: drawNotepadIcon, action: () => openNotepad() },
+    { id: 'weather', label: 'Weather', draw: drawWeatherIcon, action: () => openWeather() },
+    { id: 'clock', label: 'Clock', draw: drawClockIcon, action: () => openClock() },
+    { id: 'links', label: 'Links', draw: drawLinksIcon, action: () => openLinks() },
+    { id: 'guestbook', label: 'Guestbook', draw: drawGuestbookIcon, action: () => openGuestbook() },
+    { id: 'trash', label: 'Trash', draw: drawTrashIcon, action: () => openTrash() },
+    { id: 'settings', label: 'Settings', draw: drawSettingsIcon, action: () => openSettings() },
+    { id: 'photos', label: 'Photos', draw: drawPhotosIcon, action: () => openPhotos() },
   ];
 
   icons.forEach(ico => {
@@ -547,7 +718,7 @@ function createWindow(id, title, width, height, content, opts = {}) {
   el.querySelector('.win-ctrl.minimize').addEventListener('click', () => toggleMinimize(id));
   el.querySelector('.win-ctrl.maximize').addEventListener('click', () => toggleMaximize(id));
 
-  openWindows[id] = { el, title, minimized: false, maximized: false, restore: null };
+  openWindows[id] = { el, title, minimized: false, maximized: false, restore: null, onClose: opts.onClose || null };
   addTaskbarButton(id, title);
 
   if (opts.onReady) setTimeout(() => opts.onReady(el), 50);
@@ -566,6 +737,7 @@ function focusWindow(id) {
 function closeWindow(id) {
   const win = openWindows[id];
   if (!win) return;
+  if (win.onClose) win.onClose();
   win.el.classList.remove('open');
   setTimeout(() => win.el.remove(), 250);
   delete openWindows[id];
@@ -1602,6 +1774,829 @@ function openHelp() {
       different every time — just like real pencil drawings.</p>
     </div>`;
   createWindow('help', 'Help.txt', 520, 480, body);
+}
+
+/* ═══ ETCH-A-SKETCH ════════════════════════════════ */
+function openEtch() {
+  const body = `
+    <div class="etch-wrap">
+      <canvas id="etchCanvas" width="360" height="300"></canvas>
+      <div class="etch-controls">
+        <label class="etch-label">X <input type="range" min="0" max="360" value="180" id="etchX" class="etch-slider"></label>
+        <label class="etch-label">Y <input type="range" min="0" max="300" value="150" id="etchY" class="etch-slider"></label>
+        <button class="etch-shake" id="etchShake">Shake!</button>
+      </div>
+    </div>`;
+  createWindow('etch', 'Etch-a-Sketch', 400, 420, body, {
+    onReady: () => {
+      const cvs = $('#etchCanvas');
+      if (!cvs) return;
+      const ctx = cvs.getContext('2d');
+      ctx.fillStyle = '#c0c0c0';
+      ctx.fillRect(0, 0, 360, 300);
+      let lastX = 180, lastY = 150;
+      ctx.strokeStyle = '#4A7C59';
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      const xSlider = $('#etchX');
+      const ySlider = $('#etchY');
+      function draw() {
+        const x = parseInt(xSlider.value);
+        const y = parseInt(ySlider.value);
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        lastX = x;
+        lastY = y;
+      }
+      xSlider.addEventListener('input', draw);
+      ySlider.addEventListener('input', draw);
+      $('#etchShake').addEventListener('click', () => {
+        cvs.classList.add('etch-shaking');
+        setTimeout(() => {
+          ctx.fillStyle = '#c0c0c0';
+          ctx.fillRect(0, 0, 360, 300);
+          lastX = 180; lastY = 150;
+          xSlider.value = 180; ySlider.value = 150;
+          cvs.classList.remove('etch-shaking');
+        }, 500);
+      });
+    }
+  });
+}
+
+/* ═══ MINESWEEPER ══════════════════════════════════ */
+function openMinesweeper() {
+  const body = `
+    <div class="ms-wrap">
+      <div class="ms-header">
+        <span class="ms-mines" id="msMines">🚩 10</span>
+        <button class="ms-new" id="msNew">New Game</button>
+      </div>
+      <div class="ms-grid" id="msGrid"></div>
+    </div>`;
+  createWindow('minesweeper', 'Minesweeper', 340, 440, body, {
+    onReady: () => initMinesweeper()
+  });
+}
+
+function initMinesweeper() {
+  const ROWS = 9, COLS = 9, MINES = 10;
+  let board = [], revealed = [], flagged = [], gameOver = false;
+
+  function init() {
+    board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+    revealed = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
+    flagged = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
+    gameOver = false;
+    let placed = 0;
+    while (placed < MINES) {
+      const r = Math.floor(Math.random() * ROWS), c = Math.floor(Math.random() * COLS);
+      if (board[r][c] !== -1) { board[r][c] = -1; placed++; }
+    }
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      if (board[r][c] === -1) continue;
+      let count = 0;
+      for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+        const nr = r + dr, nc = c + dc;
+        if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && board[nr][nc] === -1) count++;
+      }
+      board[r][c] = count;
+    }
+    render();
+    const el = $('#msMines');
+    if (el) el.textContent = '🚩 ' + MINES;
+  }
+
+  function reveal(r, c) {
+    if (r < 0 || r >= ROWS || c < 0 || c >= COLS || revealed[r][c] || flagged[r][c]) return;
+    revealed[r][c] = true;
+    if (board[r][c] === 0) {
+      for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) reveal(r + dr, c + dc);
+    }
+  }
+
+  function render() {
+    const grid = $('#msGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      const btn = document.createElement('button');
+      btn.className = 'ms-cell';
+      if (revealed[r][c]) {
+        btn.classList.add('revealed');
+        if (board[r][c] === -1) { btn.textContent = '💣'; btn.classList.add('mine'); }
+        else if (board[r][c] > 0) { btn.textContent = board[r][c]; btn.dataset.num = board[r][c]; }
+      } else if (flagged[r][c]) {
+        btn.textContent = '🚩';
+      }
+      btn.addEventListener('click', () => {
+        if (gameOver || flagged[r][c]) return;
+        if (board[r][c] === -1) {
+          gameOver = true;
+          for (let rr = 0; rr < ROWS; rr++) for (let cc = 0; cc < COLS; cc++) revealed[rr][cc] = true;
+          render();
+          setTimeout(() => alert('Game Over! 💥'), 100);
+          return;
+        }
+        reveal(r, c);
+        render();
+        checkWin();
+      });
+      btn.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        if (gameOver || revealed[r][c]) return;
+        flagged[r][c] = !flagged[r][c];
+        const count = flagged.flat().filter(Boolean).length;
+        const el = $('#msMines');
+        if (el) el.textContent = '🚩 ' + (MINES - count);
+        render();
+      });
+      grid.appendChild(btn);
+    }
+  }
+
+  function checkWin() {
+    let unrevealed = 0;
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      if (!revealed[r][c]) unrevealed++;
+    }
+    if (unrevealed === MINES) {
+      gameOver = true;
+      setTimeout(() => alert('You win! 🎉'), 100);
+    }
+  }
+
+  init();
+  const newBtn = $('#msNew');
+  if (newBtn) newBtn.addEventListener('click', init);
+}
+
+/* ═══ SNAKE ════════════════════════════════════════ */
+function openSnake() {
+  const body = `
+    <div class="snake-wrap">
+      <div class="snake-header">
+        <span class="snake-score" id="snakeScore">Score: 0</span>
+        <button class="snake-start" id="snakeStart">Start</button>
+      </div>
+      <canvas id="snakeCanvas" width="360" height="360"></canvas>
+    </div>`;
+  let snakeInterval = null;
+  createWindow('snake', 'Snake', 380, 440, body, {
+    onReady: () => {
+      const cvs = $('#snakeCanvas');
+      if (!cvs) return;
+      const ctx = cvs.getContext('2d');
+      const G = 20, W = 18, H = 18;
+      let snake, food, dir, score, running;
+
+      function reset() {
+        snake = [{ x: 9, y: 9 }];
+        dir = { x: 1, y: 0 };
+        score = 0;
+        running = false;
+        placeFood();
+        draw();
+        const el = $('#snakeScore');
+        if (el) el.textContent = 'Score: 0';
+      }
+
+      function placeFood() {
+        do { food = { x: Math.floor(Math.random() * W), y: Math.floor(Math.random() * H) }; }
+        while (snake.some(s => s.x === food.x && s.y === food.y));
+      }
+
+      function draw() {
+        ctx.fillStyle = '#f0ece4';
+        ctx.fillRect(0, 0, 360, 360);
+        ctx.fillStyle = '#4A7C59';
+        snake.forEach(s => ctx.fillRect(s.x * G, s.y * G, G - 1, G - 1));
+        ctx.beginPath();
+        ctx.arc(food.x * G + G / 2, food.y * G + G / 2, G / 2 - 2, 0, Math.PI * 2);
+        ctx.fillStyle = '#e55';
+        ctx.fill();
+      }
+
+      function step() {
+        const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+        if (head.x < 0 || head.x >= W || head.y < 0 || head.y >= H || snake.some(s => s.x === head.x && s.y === head.y)) {
+          running = false;
+          if (snakeInterval) { clearInterval(snakeInterval); snakeInterval = null; }
+          alert('Game Over! Score: ' + score);
+          return;
+        }
+        snake.unshift(head);
+        if (head.x === food.x && head.y === food.y) {
+          score++;
+          const el = $('#snakeScore');
+          if (el) el.textContent = 'Score: ' + score;
+          placeFood();
+          if (score % 5 === 0 && snakeInterval) {
+            clearInterval(snakeInterval);
+            const speed = Math.max(50, 150 - Math.floor(score / 5) * 15);
+            snakeInterval = setInterval(step, speed);
+          }
+        } else {
+          snake.pop();
+        }
+        draw();
+      }
+
+      function handleKey(e) {
+        if (!openWindows['snake']) return;
+        const map = { ArrowUp: { x: 0, y: -1 }, ArrowDown: { x: 0, y: 1 }, ArrowLeft: { x: -1, y: 0 }, ArrowRight: { x: 1, y: 0 } };
+        if (map[e.key]) {
+          e.preventDefault();
+          const d = map[e.key];
+          if (d.x !== -dir.x || d.y !== -dir.y) dir = d;
+        }
+      }
+
+      document.addEventListener('keydown', handleKey);
+      reset();
+
+      $('#snakeStart').addEventListener('click', () => {
+        if (running) return;
+        reset();
+        running = true;
+        snakeInterval = setInterval(step, 150);
+      });
+    },
+    onClose: () => {
+      if (snakeInterval) { clearInterval(snakeInterval); snakeInterval = null; }
+    }
+  });
+}
+
+/* ═══ DRESS UP ═════════════════════════════════════ */
+function openDressUp() {
+  const body = `
+    <div class="dressup-wrap">
+      <canvas id="dressupCanvas" width="320" height="280"></canvas>
+      <div class="dressup-btns" id="dressupBtns">
+        <button class="dressup-btn" data-acc="hat">Hat</button>
+        <button class="dressup-btn" data-acc="glasses">Glasses</button>
+        <button class="dressup-btn" data-acc="bowtie">Bow Tie</button>
+        <button class="dressup-btn" data-acc="cape">Cape</button>
+        <button class="dressup-btn" data-acc="crown">Crown</button>
+        <button class="dressup-btn" data-acc="mustache">Mustache</button>
+      </div>
+      <button class="dressup-reset" id="dressupReset">Reset</button>
+    </div>`;
+  createWindow('dressup', 'Sketch Dress Up', 360, 450, body, {
+    onReady: () => {
+      const cvs = $('#dressupCanvas');
+      if (!cvs) return;
+      const accessories = { hat: false, glasses: false, bowtie: false, cape: false, crown: false, mustache: false };
+
+      function drawFigure() {
+        const rc = RC(cvs); if (!rc) return;
+        const ctx = cvs.getContext('2d');
+        ctx.clearRect(0, 0, 320, 280);
+        // Head
+        rc.circle(160, 60, 50, { roughness: 1.8, stroke: '#1A1A1A', strokeWidth: 1.5 });
+        // Body
+        rc.line(160, 86, 160, 180, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1.5 });
+        // Arms
+        rc.line(160, 120, 110, 155, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1.3 });
+        rc.line(160, 120, 210, 155, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1.3 });
+        // Legs
+        rc.line(160, 180, 125, 250, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1.3 });
+        rc.line(160, 180, 195, 250, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1.3 });
+
+        if (accessories.hat) {
+          rc.rectangle(130, 22, 60, 14, { roughness: 1.5, stroke: '#C4956A', strokeWidth: 1.3, fill: '#C4956A', fillStyle: 'solid' });
+          rc.rectangle(140, 4, 40, 20, { roughness: 1.5, stroke: '#C4956A', strokeWidth: 1.3, fill: '#C4956A', fillStyle: 'solid' });
+        }
+        if (accessories.glasses) {
+          rc.circle(148, 58, 18, { roughness: 1.5, stroke: '#3a6fbf', strokeWidth: 1.3 });
+          rc.circle(172, 58, 18, { roughness: 1.5, stroke: '#3a6fbf', strokeWidth: 1.3 });
+          rc.line(157, 58, 163, 58, { roughness: 1, stroke: '#3a6fbf', strokeWidth: 1 });
+        }
+        if (accessories.bowtie) {
+          rc.linearPath([[145, 90], [160, 96], [175, 90], [160, 102], [145, 90]], { roughness: 1.5, stroke: '#e55', strokeWidth: 1.3, fill: '#e55', fillStyle: 'solid' });
+        }
+        if (accessories.cape) {
+          rc.linearPath([[140, 100], [100, 200], [160, 180], [220, 200], [180, 100]], { roughness: 2, stroke: '#9b59b6', strokeWidth: 1.3, fill: 'rgba(155,89,182,0.2)', fillStyle: 'solid' });
+        }
+        if (accessories.crown) {
+          rc.linearPath([[135, 36], [140, 20], [150, 30], [160, 14], [170, 30], [180, 20], [185, 36]], { roughness: 1.5, stroke: '#f0c040', strokeWidth: 1.3, fill: '#ffd', fillStyle: 'solid' });
+        }
+        if (accessories.mustache) {
+          rc.arc(152, 70, 16, 10, 0, Math.PI, false, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1.3 });
+          rc.arc(168, 70, 16, 10, 0, Math.PI, false, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1.3 });
+        }
+      }
+
+      drawFigure();
+      markWriggle(cvs, drawFigure);
+
+      document.querySelectorAll('.dressup-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const acc = btn.dataset.acc;
+          accessories[acc] = !accessories[acc];
+          btn.classList.toggle('active', accessories[acc]);
+          drawFigure();
+        });
+      });
+
+      $('#dressupReset').addEventListener('click', () => {
+        Object.keys(accessories).forEach(k => accessories[k] = false);
+        document.querySelectorAll('.dressup-btn').forEach(b => b.classList.remove('active'));
+        drawFigure();
+      });
+    }
+  });
+}
+
+/* ═══ 8-BALL ═══════════════════════════════════════ */
+function open8Ball() {
+  const answers = [
+    'It is certain.', 'It is decidedly so.', 'Without a doubt.', 'Yes definitely.',
+    'You may rely on it.', 'As I see it, yes.', 'Most likely.', 'Outlook good.',
+    'Yes.', 'Signs point to yes.', 'Reply hazy, try again.', 'Ask again later.',
+    'Better not tell you now.', 'Cannot predict now.', 'Concentrate and ask again.',
+    'Don\'t count on it.', 'My reply is no.', 'My sources say no.',
+    'Outlook not so good.', 'Very doubtful.'
+  ];
+  const body = `
+    <div class="ball-wrap">
+      <input type="text" class="ball-question" id="ballQ" placeholder="Ask a question...">
+      <canvas id="ballCanvas" width="200" height="200"></canvas>
+      <div class="ball-answer" id="ballAnswer">Ask the ball...</div>
+      <button class="ball-ask" id="ballAsk">Ask!</button>
+    </div>`;
+  createWindow('8ball', 'Magic 8-Ball', 300, 380, body, {
+    onReady: () => {
+      const cvs = $('#ballCanvas');
+      if (!cvs) return;
+
+      function drawBall() {
+        const rc = RC(cvs); if (!rc) return;
+        const ctx = cvs.getContext('2d');
+        ctx.clearRect(0, 0, 200, 200);
+        rc.circle(100, 100, 160, { roughness: 2, stroke: '#1A1A1A', strokeWidth: 2, fill: '#1A1A1A', fillStyle: 'solid' });
+        rc.circle(100, 90, 50, { roughness: 1.5, stroke: '#223', strokeWidth: 1, fill: '#223', fillStyle: 'solid' });
+      }
+
+      drawBall();
+      markWriggle(cvs, drawBall);
+
+      function ask() {
+        const cvs = $('#ballCanvas');
+        if (cvs) cvs.classList.add('ball-shaking');
+        const ansEl = $('#ballAnswer');
+        if (ansEl) ansEl.textContent = '...';
+        setTimeout(() => {
+          if (cvs) cvs.classList.remove('ball-shaking');
+          const answer = answers[Math.floor(Math.random() * answers.length)];
+          if (ansEl) ansEl.textContent = answer;
+        }, 500);
+      }
+
+      const askBtn = $('#ballAsk');
+      if (askBtn) askBtn.addEventListener('click', ask);
+      const cvs2 = $('#ballCanvas');
+      if (cvs2) cvs2.addEventListener('click', ask);
+    }
+  });
+}
+
+/* ═══ CALCULATOR ═══════════════════════════════════ */
+function openCalc() {
+  const body = `
+    <div class="calc-wrap">
+      <div class="calc-display" id="calcDisplay">0</div>
+      <div class="calc-grid">
+        <button class="calc-btn" data-val="7">7</button>
+        <button class="calc-btn" data-val="8">8</button>
+        <button class="calc-btn" data-val="9">9</button>
+        <button class="calc-btn op" data-val="/">÷</button>
+        <button class="calc-btn" data-val="4">4</button>
+        <button class="calc-btn" data-val="5">5</button>
+        <button class="calc-btn" data-val="6">6</button>
+        <button class="calc-btn op" data-val="*">×</button>
+        <button class="calc-btn" data-val="1">1</button>
+        <button class="calc-btn" data-val="2">2</button>
+        <button class="calc-btn" data-val="3">3</button>
+        <button class="calc-btn op" data-val="-">−</button>
+        <button class="calc-btn" data-val="0">0</button>
+        <button class="calc-btn clear" data-val="C">C</button>
+        <button class="calc-btn eq" data-val="=">=</button>
+        <button class="calc-btn op" data-val="+">+</button>
+      </div>
+    </div>`;
+  createWindow('calc', 'Calculator', 280, 400, body, {
+    onReady: (win) => {
+      const display = win.querySelector('#calcDisplay');
+      let current = '0', expr = '';
+      win.querySelectorAll('.calc-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const v = btn.dataset.val;
+          if (v === 'C') {
+            current = '0'; expr = '';
+          } else if (v === '=') {
+            try {
+              const safe = expr.replace(/[^0-9+\-*/().]/g, '');
+              current = String(Function('"use strict";return (' + safe + ')')());
+              expr = current;
+            } catch { current = 'Error'; expr = ''; }
+          } else if (['+', '-', '*', '/'].includes(v)) {
+            expr += v;
+            current = '';
+          } else {
+            if (current === '0' || current === 'Error') current = v;
+            else current += v;
+            expr += v;
+          }
+          display.textContent = current || '0';
+        });
+      });
+    }
+  });
+}
+
+/* ═══ NOTEPAD APP ══════════════════════════════════ */
+function openNotepad() {
+  const saved = localStorage.getItem('notepad-content') || '';
+  const body = `
+    <div class="np-wrap">
+      <textarea class="np-textarea" id="npText" placeholder="Start typing...">${saved.replace(/</g,'&lt;')}</textarea>
+    </div>`;
+  createWindow('notepad', 'Notepad', 420, 380, body, {
+    onReady: () => {
+      const ta = $('#npText');
+      if (ta) {
+        ta.addEventListener('input', () => {
+          localStorage.setItem('notepad-content', ta.value);
+        });
+      }
+    }
+  });
+}
+
+/* ═══ WEATHER ══════════════════════════════════════ */
+function openWeather() {
+  const body = `
+    <div class="weather-wrap">
+      <div class="weather-loc">Melbourne, VIC</div>
+      <canvas id="weatherCanvas" width="100" height="100"></canvas>
+      <div class="weather-temp" id="weatherTemp">Loading...</div>
+      <div class="weather-detail" id="weatherDetail"></div>
+      <button class="weather-refresh" id="weatherRefresh">Refresh</button>
+    </div>`;
+  createWindow('weather', 'Weather', 320, 300, body, {
+    onReady: () => fetchWeather()
+  });
+}
+
+function fetchWeather() {
+  const url = 'https://api.open-meteo.com/v1/forecast?latitude=-37.81&longitude=144.96&current_weather=true';
+  fetch(url).then(r => r.json()).then(data => {
+    const w = data.current_weather;
+    const tempEl = $('#weatherTemp');
+    const detailEl = $('#weatherDetail');
+    const cvs = $('#weatherCanvas');
+    if (tempEl) tempEl.textContent = w.temperature + '°C';
+    const codes = { 0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast', 45: 'Fog', 51: 'Light drizzle', 61: 'Rain', 71: 'Snow', 80: 'Showers', 95: 'Thunderstorm' };
+    const desc = codes[w.weathercode] || 'Weather code ' + w.weathercode;
+    if (detailEl) detailEl.textContent = desc + ' · Wind: ' + w.windspeed + ' km/h';
+    if (cvs) {
+      function drawWeather() {
+        const rc = RC(cvs); if (!rc) return;
+        const ctx = cvs.getContext('2d');
+        ctx.clearRect(0, 0, 100, 100);
+        if (w.weathercode <= 1) {
+          rc.circle(50, 50, 50, { roughness: 2, stroke: '#C4956A', strokeWidth: 1.5, fill: '#ffd', fillStyle: 'solid' });
+          [[50, 10, 50, 2], [50, 90, 50, 98], [10, 50, 2, 50], [90, 50, 98, 50]].forEach(([x1, y1, x2, y2]) => {
+            rc.line(x1, y1, x2, y2, { roughness: 1.2, stroke: '#C4956A', strokeWidth: 1 });
+          });
+        } else {
+          rc.ellipse(40, 50, 50, 30, { roughness: 2, stroke: '#9B9B9B', strokeWidth: 1.5, fill: '#e8e3d9', fillStyle: 'solid' });
+          rc.ellipse(65, 45, 40, 25, { roughness: 2, stroke: '#9B9B9B', strokeWidth: 1.5, fill: '#e8e3d9', fillStyle: 'solid' });
+        }
+      }
+      drawWeather();
+      markWriggle(cvs, drawWeather);
+    }
+  }).catch(() => {
+    const tempEl = $('#weatherTemp');
+    if (tempEl) tempEl.textContent = 'Failed to load';
+  });
+  const btn = $('#weatherRefresh');
+  if (btn) btn.onclick = fetchWeather;
+}
+
+/* ═══ CLOCK ════════════════════════════════════════ */
+function openClock() {
+  const body = `
+    <div class="clock-wrap">
+      <canvas id="clockCanvas" width="240" height="240"></canvas>
+      <div class="clock-digital" id="clockDigital"></div>
+    </div>`;
+  let clockInterval = null;
+  createWindow('clock', 'Clock', 300, 340, body, {
+    onReady: () => {
+      const cvs = $('#clockCanvas');
+      if (!cvs) return;
+
+      function drawClock() {
+        const rc = RC(cvs); if (!rc) return;
+        const ctx = cvs.getContext('2d');
+        ctx.clearRect(0, 0, 240, 240);
+        const cx = 120, cy = 120, r = 100;
+
+        rc.circle(cx, cy, r * 2, { roughness: 1.8, stroke: '#1A1A1A', strokeWidth: 1.5 });
+
+        // Numbers
+        ctx.font = '600 18px Caveat'; ctx.fillStyle = '#1A1A1A'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        for (let i = 1; i <= 12; i++) {
+          const angle = (i * 30 - 90) * Math.PI / 180;
+          ctx.fillText(i, cx + Math.cos(angle) * 82, cy + Math.sin(angle) * 82);
+        }
+
+        // Dots at 12/3/6/9
+        [0, 90, 180, 270].forEach(deg => {
+          const a = (deg - 90) * Math.PI / 180;
+          rc.circle(cx + Math.cos(a) * 94, cy + Math.sin(a) * 94, 4, { roughness: 1, stroke: '#4A7C59', fill: '#4A7C59', fillStyle: 'solid', strokeWidth: 0.8 });
+        });
+
+        const now = new Date();
+        const h = now.getHours() % 12, m = now.getMinutes(), s = now.getSeconds();
+
+        // Hour hand
+        const hAngle = ((h + m / 60) * 30 - 90) * Math.PI / 180;
+        rc.line(cx, cy, cx + Math.cos(hAngle) * 55, cy + Math.sin(hAngle) * 55, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 2.5 });
+
+        // Minute hand
+        const mAngle = ((m + s / 60) * 6 - 90) * Math.PI / 180;
+        rc.line(cx, cy, cx + Math.cos(mAngle) * 75, cy + Math.sin(mAngle) * 75, { roughness: 1.5, stroke: '#1A1A1A', strokeWidth: 1.5 });
+
+        // Second hand (red)
+        const sAngle = (s * 6 - 90) * Math.PI / 180;
+        rc.line(cx, cy, cx + Math.cos(sAngle) * 80, cy + Math.sin(sAngle) * 80, { roughness: 1, stroke: '#e55', strokeWidth: 1 });
+
+        // Center dot
+        rc.circle(cx, cy, 6, { roughness: 1, stroke: '#1A1A1A', fill: '#1A1A1A', fillStyle: 'solid', strokeWidth: 1 });
+
+        const digitalEl = $('#clockDigital');
+        if (digitalEl) digitalEl.textContent = now.toLocaleTimeString();
+      }
+
+      drawClock();
+      clockInterval = setInterval(drawClock, 1000);
+    },
+    onClose: () => {
+      if (clockInterval) { clearInterval(clockInterval); clockInterval = null; }
+    }
+  });
+}
+
+/* ═══ LINKS / BOOKMARKS ═══════════════════════════ */
+function openLinks() {
+  const links = [
+    { title: 'GitHub', url: 'https://github.com/Huh2006', letter: 'G', color: '#1A1A1A' },
+    { title: 'LinkedIn', url: 'https://linkedin.com/in/adrian-tan12', letter: 'L', color: '#3a6fbf' },
+    { title: 'RMIT', url: 'https://rmit.edu.au', letter: 'R', color: '#e55' },
+    { title: 'Rough.js', url: 'https://roughjs.com', letter: 'R', color: '#4A7C59' },
+    { title: 'MDN Web Docs', url: 'https://developer.mozilla.org', letter: 'M', color: '#1A1A1A' },
+    { title: 'Blender', url: 'https://blender.org', letter: 'B', color: '#C4956A' },
+  ];
+  let html = '<div class="links-list">';
+  links.forEach((l, i) => {
+    html += `
+      <a href="${l.url}" target="_blank" rel="noopener" class="links-item">
+        <canvas width="24" height="24" data-link-idx="${i}"></canvas>
+        <div class="links-info">
+          <span class="links-title">${l.title}</span>
+          <span class="links-url">${l.url}</span>
+        </div>
+      </a>`;
+  });
+  html += '</div>';
+  createWindow('links', 'Bookmarks', 360, 380, html, {
+    onReady: (win) => {
+      win.querySelectorAll('.links-item canvas').forEach(cvs => {
+        const idx = parseInt(cvs.dataset.linkIdx);
+        const l = links[idx];
+        function drawIcon() {
+          const rc = RC(cvs); if (!rc) return;
+          const ctx = cvs.getContext('2d');
+          ctx.clearRect(0, 0, 24, 24);
+          rc.circle(12, 12, 20, { roughness: 1.5, stroke: l.color, strokeWidth: 1.2 });
+          ctx.font = '600 12px Caveat'; ctx.fillStyle = l.color;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(l.letter, 12, 13);
+        }
+        drawIcon();
+        markWriggle(cvs, drawIcon);
+      });
+    }
+  });
+}
+
+/* ═══ GUESTBOOK ════════════════════════════════════ */
+function openGuestbook() {
+  const body = `
+    <div class="gb-wrap">
+      <div class="gb-form">
+        <input type="text" class="gb-input" id="gbName" placeholder="Your name" maxlength="50">
+        <textarea class="gb-textarea" id="gbMsg" placeholder="Leave a message..." rows="3" maxlength="280"></textarea>
+        <button class="gb-sign" id="gbSign">Sign</button>
+      </div>
+      <div class="gb-entries" id="gbEntries"></div>
+    </div>`;
+  createWindow('guestbook', 'Guestbook', 420, 460, body, {
+    onReady: () => {
+      renderGuestbook();
+      const signBtn = $('#gbSign');
+      if (signBtn) signBtn.addEventListener('click', () => {
+        const nameEl = $('#gbName');
+        const msgEl = $('#gbMsg');
+        const name = nameEl?.value.trim();
+        const msg = msgEl?.value.trim();
+        if (!name || !msg) return;
+        const entries = JSON.parse(localStorage.getItem('guestbook-entries') || '[]');
+        entries.unshift({ name, msg, time: new Date().toLocaleString() });
+        localStorage.setItem('guestbook-entries', JSON.stringify(entries));
+        if (nameEl) nameEl.value = '';
+        if (msgEl) msgEl.value = '';
+        renderGuestbook();
+      });
+    }
+  });
+}
+
+function renderGuestbook() {
+  const container = $('#gbEntries');
+  if (!container) return;
+  const entries = JSON.parse(localStorage.getItem('guestbook-entries') || '[]');
+  if (entries.length === 0) {
+    container.innerHTML = '<div class="gb-empty">No entries yet. Be the first!</div>';
+    return;
+  }
+  container.innerHTML = entries.map(e => `
+    <div class="gb-entry">
+      <span class="gb-name">${e.name.replace(/</g,'&lt;')}</span>
+      <span class="gb-time">${e.time}</span>
+      <p class="gb-msg">${e.msg.replace(/</g,'&lt;')}</p>
+    </div>`).join('');
+}
+
+/* ═══ TRASH ════════════════════════════════════════ */
+function openTrash() {
+  const body = `
+    <div class="trash-wrap">
+      <canvas id="trashBinCanvas" width="80" height="80"></canvas>
+      <div class="trash-msg">Nothing here... yet 🗑️</div>
+    </div>`;
+  createWindow('trash', 'Trash', 300, 200, body, {
+    onReady: () => {
+      const cvs = $('#trashBinCanvas');
+      if (!cvs) return;
+      function drawBin() {
+        const rc = RC(cvs); if (!rc) return;
+        const ctx = cvs.getContext('2d');
+        ctx.clearRect(0, 0, 80, 80);
+        rc.rectangle(25, 10, 30, 8, { roughness: 1.5, stroke: '#9B9B9B', strokeWidth: 1.3 });
+        rc.linearPath([[18, 18], [22, 70], [58, 70], [62, 18]], { roughness: 1.8, stroke: '#9B9B9B', strokeWidth: 1.3 });
+        rc.line(33, 26, 33, 62, { roughness: 1.2, stroke: '#9B9B9B', strokeWidth: 0.8 });
+        rc.line(40, 26, 40, 62, { roughness: 1.2, stroke: '#9B9B9B', strokeWidth: 0.8 });
+        rc.line(47, 26, 47, 62, { roughness: 1.2, stroke: '#9B9B9B', strokeWidth: 0.8 });
+      }
+      drawBin();
+      markWriggle(cvs, drawBin);
+    }
+  });
+}
+
+/* ═══ SETTINGS ═════════════════════════════════════ */
+function openSettings() {
+  const colors = ['#F7F5F0', '#E8E3D9', '#f0e6d3', '#dde8dd', '#d8e0ed', '#1A1A1A'];
+  const colorDots = colors.map(c =>
+    `<button class="settings-color" style="background:${c};${c === '#1A1A1A' ? 'border-color:#666' : ''}" data-color="${c}"></button>`
+  ).join('');
+
+  const body = `
+    <div class="settings-wrap">
+      <div class="settings-section">
+        <div class="settings-label">Wallpaper Color</div>
+        <div class="settings-colors">${colorDots}</div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-label">Wriggle Speed</div>
+        <input type="range" min="4" max="16" value="${WRIGGLE_FPS}" class="settings-range" id="settingsWriggle">
+      </div>
+      <div class="settings-section">
+        <div class="settings-label">Music Volume</div>
+        <input type="range" min="0" max="100" value="${masterGain ? Math.round(masterGain.gain.value * 100) : 30}" class="settings-range" id="settingsVolume">
+      </div>
+      <button class="settings-reset" id="settingsReset">Reset All</button>
+    </div>`;
+  createWindow('settings', 'Settings', 380, 400, body, {
+    onReady: (win) => {
+      win.querySelectorAll('.settings-color').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const c = btn.dataset.color;
+          document.body.style.background = c;
+          document.documentElement.style.setProperty('--bg', c);
+        });
+      });
+
+      const wriggleSlider = win.querySelector('#settingsWriggle');
+      if (wriggleSlider) wriggleSlider.addEventListener('input', () => {
+        WRIGGLE_FPS = parseInt(wriggleSlider.value);
+      });
+
+      const volSlider = win.querySelector('#settingsVolume');
+      if (volSlider) volSlider.addEventListener('input', () => {
+        if (masterGain) masterGain.gain.value = parseInt(volSlider.value) / 100;
+      });
+
+      const resetBtn = win.querySelector('#settingsReset');
+      if (resetBtn) resetBtn.addEventListener('click', () => {
+        document.body.style.background = '';
+        document.documentElement.style.setProperty('--bg', '#F7F5F0');
+        WRIGGLE_FPS = 8;
+        if (wriggleSlider) wriggleSlider.value = 8;
+        if (masterGain) masterGain.gain.value = 0.3;
+        if (volSlider) volSlider.value = 30;
+      });
+    }
+  });
+}
+
+/* ═══ PHOTOS ═══════════════════════════════════════ */
+function openPhotos() {
+  const photos = [
+    { caption: 'Sunset', fill: '#C4956A', accent: '#e55' },
+    { caption: 'Mountains', fill: '#4A7C59', accent: '#9B9B9B' },
+    { caption: 'City Lights', fill: '#1A1A1A', accent: '#f0c040' },
+    { caption: 'Ocean', fill: '#3a6fbf', accent: '#87CEEB' },
+    { caption: 'Forest', fill: '#4A7C59', accent: '#2d5a3f' },
+    { caption: 'Abstract', fill: '#9b59b6', accent: '#C4956A' },
+  ];
+  let html = '<div class="photos-grid">';
+  photos.forEach((p, i) => {
+    html += `
+      <div class="photo-polaroid" data-photo-idx="${i}">
+        <canvas width="140" height="120" data-photo-idx="${i}"></canvas>
+        <span class="photo-caption">${p.caption}</span>
+      </div>`;
+  });
+  html += '</div>';
+  createWindow('photos', 'Photos', 440, 400, html, {
+    onReady: (win) => {
+      win.querySelectorAll('.photo-polaroid canvas').forEach(cvs => {
+        const idx = parseInt(cvs.dataset.photoIdx);
+        const p = photos[idx];
+        function drawPhoto() {
+          const rc = RC(cvs); if (!rc) return;
+          const ctx = cvs.getContext('2d');
+          ctx.clearRect(0, 0, 140, 120);
+          rc.rectangle(4, 4, 132, 112, { roughness: 1.8, stroke: '#1A1A1A', strokeWidth: 1, fill: '#fff', fillStyle: 'solid' });
+          rc.rectangle(12, 10, 116, 80, { roughness: 1.5, stroke: '#9B9B9B', strokeWidth: 0.8, fill: p.fill, fillStyle: 'solid', fillWeight: 0.5 });
+          // Mountain/sun scene
+          rc.line(12, 80, 50, 40, { roughness: 1.5, stroke: p.accent, strokeWidth: 1.2 });
+          rc.line(50, 40, 80, 65, { roughness: 1.5, stroke: p.accent, strokeWidth: 1.2 });
+          rc.line(80, 65, 128, 35, { roughness: 1.5, stroke: p.accent, strokeWidth: 1.2 });
+          rc.circle(110, 22, 14, { roughness: 1.5, stroke: '#ffd', strokeWidth: 1, fill: '#ffd', fillStyle: 'solid' });
+        }
+        drawPhoto();
+        markWriggle(cvs, drawPhoto);
+      });
+
+      win.querySelectorAll('.photo-polaroid').forEach(el => {
+        el.addEventListener('click', () => {
+          const idx = parseInt(el.dataset.photoIdx);
+          const p = photos[idx];
+          const bigBody = `<div class="photo-big"><canvas id="photoBig${idx}" width="380" height="280"></canvas></div>`;
+          createWindow('photo-' + idx, p.caption, 420, 340, bigBody, {
+            onReady: () => {
+              const bigCvs = $(`#photoBig${idx}`);
+              if (!bigCvs) return;
+              function drawBig() {
+                const rc = RC(bigCvs); if (!rc) return;
+                const ctx = bigCvs.getContext('2d');
+                ctx.clearRect(0, 0, 380, 280);
+                rc.rectangle(4, 4, 372, 272, { roughness: 2, stroke: '#1A1A1A', strokeWidth: 1.5, fill: p.fill, fillStyle: 'solid', fillWeight: 0.5 });
+                rc.line(4, 250, 120, 130, { roughness: 2, stroke: p.accent, strokeWidth: 2 });
+                rc.line(120, 130, 220, 190, { roughness: 2, stroke: p.accent, strokeWidth: 2 });
+                rc.line(220, 190, 376, 100, { roughness: 2, stroke: p.accent, strokeWidth: 2 });
+                rc.circle(320, 50, 40, { roughness: 2, stroke: '#ffd', strokeWidth: 1.5, fill: '#ffd', fillStyle: 'solid' });
+                ctx.font = '700 28px Caveat'; ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+                ctx.fillText(p.caption, 190, 260);
+              }
+              drawBig();
+              markWriggle(bigCvs, drawBig);
+            }
+          });
+        });
+      });
+    }
+  });
 }
 
 /* ═══ EXPOSE FOR ADMIN ═════════════════════════════ */
