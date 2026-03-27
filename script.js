@@ -295,9 +295,10 @@ const openWindows = {};
 
 let _desktopInited = false;
 function initDesktop() {
-  // Always stop any existing music first to prevent double-play
+  // Kill any existing music completely before doing anything
   stopSynth();
   stopMusicTick();
+  musicState.playing = false;
 
   renderDesktopIcons();
 
@@ -307,10 +308,9 @@ function initDesktop() {
     _desktopInited = true;
   }
 
-  // Auto-play Morning Sketch when entering desktop
+  // Start background music — single instance, loops forever
   musicState.trackIdx = 0;
   musicState.elapsed = 0;
-  musicState.playing = false; // reset before starting fresh
   initAudio();
   if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
   musicState.playing = true;
@@ -1314,6 +1314,7 @@ const musicTracks = [
 let musicState = { playing: false, trackIdx: 0, elapsed: 0, interval: null };
 let audioCtx = null, masterGain = null, lofiFilter = null;
 let synthInterval = null, chordStep = 0, melodyStep = 0;
+let activeOscillators = []; // track all playing oscillators so we can kill them
 
 function initAudio() {
   if (audioCtx) return;
@@ -1333,7 +1334,7 @@ function initAudio() {
 }
 
 function playNote(freq, duration, delay, type, vol) {
-  if (!audioCtx || freq === 0) return;
+  if (!audioCtx || freq === 0 || !musicState.playing) return;
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
   osc.type = type || 'sine';
@@ -1350,6 +1351,13 @@ function playNote(freq, duration, delay, type, vol) {
   gain.connect(lofiFilter);
   osc.start(audioCtx.currentTime + delay);
   osc.stop(audioCtx.currentTime + delay + duration + 0.05);
+
+  // Track it so stopSynth can kill lingering notes
+  activeOscillators.push(osc);
+  osc.onended = () => {
+    const i = activeOscillators.indexOf(osc);
+    if (i !== -1) activeOscillators.splice(i, 1);
+  };
 }
 
 function playChord(freqs, duration, delay) {
@@ -1400,6 +1408,11 @@ function playBeat(track, beatLen) {
 
 function stopSynth() {
   if (synthInterval) { clearInterval(synthInterval); synthInterval = null; }
+  // Kill all lingering oscillators immediately
+  activeOscillators.forEach(osc => {
+    try { osc.stop(); } catch(e) {}
+  });
+  activeOscillators = [];
 }
 
 function openMusic() {
@@ -1458,7 +1471,7 @@ function openMusic() {
     });
   }, 50);
 
-  if (musicState.playing) startMusicTick();
+  // Don't start another tick — music is already playing in the background
 }
 
 function drawAlbumArt(canvas, idx) {
