@@ -2397,7 +2397,26 @@ function openLinks() {
   });
 }
 
-/* ═══ GUESTBOOK ════════════════════════════════════ */
+/* ═══ GUESTBOOK (Supabase) ═════════════════════════ */
+const SUPABASE_URL = 'https://fahhjkmejewsmzbtpiiv.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_jDZ4eDAmdmSA5u50wteqTw__q8fEhGA';
+
+async function sbFetch(path, opts = {}) {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': opts.prefer || '',
+      ...opts.headers,
+    },
+    method: opts.method || 'GET',
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+  });
+  if (opts.method === 'DELETE') return [];
+  return res.json();
+}
+
 function openGuestbook() {
   const body = `
     <div class="gb-wrap">
@@ -2406,56 +2425,68 @@ function openGuestbook() {
         <textarea class="gb-textarea" id="gbMsg" placeholder="Leave a message..." rows="3" maxlength="280"></textarea>
         <button class="gb-sign" id="gbSign">Sign</button>
       </div>
-      <div class="gb-entries" id="gbEntries"></div>
+      <div class="gb-entries" id="gbEntries">
+        <div class="gb-empty">Loading...</div>
+      </div>
     </div>`;
   createWindow('guestbook', 'Guestbook', 420, 460, body, {
     onReady: () => {
       renderGuestbook();
       const signBtn = $('#gbSign');
-      if (signBtn) signBtn.addEventListener('click', () => {
+      if (signBtn) signBtn.addEventListener('click', async () => {
         const nameEl = $('#gbName');
         const msgEl = $('#gbMsg');
         const name = nameEl?.value.trim();
         const msg = msgEl?.value.trim();
         if (!name || !msg) return;
-        const entries = JSON.parse(localStorage.getItem('guestbook-entries') || '[]');
-        entries.unshift({ name, msg, time: new Date().toLocaleString() });
-        localStorage.setItem('guestbook-entries', JSON.stringify(entries));
+        signBtn.disabled = true;
+        signBtn.textContent = '...';
+        await sbFetch('guestbook', {
+          method: 'POST',
+          prefer: 'return=representation',
+          body: { name, msg },
+        });
         if (nameEl) nameEl.value = '';
         if (msgEl) msgEl.value = '';
+        signBtn.disabled = false;
+        signBtn.textContent = 'Sign';
         renderGuestbook();
       });
     }
   });
 }
 
-function renderGuestbook() {
+async function renderGuestbook() {
   const container = $('#gbEntries');
   if (!container) return;
-  const entries = JSON.parse(localStorage.getItem('guestbook-entries') || '[]');
-  if (entries.length === 0) {
+
+  const entries = await sbFetch('guestbook?select=*&order=created_at.desc&limit=50');
+
+  if (!entries || entries.length === 0) {
     container.innerHTML = '<div class="gb-empty">No entries yet. Be the first!</div>';
     return;
   }
   const isAdm = typeof window.isAdmin === 'function' && window.isAdmin();
-  container.innerHTML = entries.map((e, i) => `
+  container.innerHTML = entries.map(e => {
+    const time = new Date(e.created_at).toLocaleString();
+    return `
     <div class="gb-entry">
       <div class="gb-entry-top">
         <span class="gb-name">${e.name.replace(/</g,'&lt;')}</span>
-        <span class="gb-time">${e.time}</span>
-        ${isAdm ? `<button class="gb-del" data-gb-idx="${i}" title="Delete">✕</button>` : ''}
+        <span class="gb-time">${time}</span>
+        ${isAdm ? `<button class="gb-del" data-gb-id="${e.id}" title="Delete">✕</button>` : ''}
       </div>
       <p class="gb-msg">${e.msg.replace(/</g,'&lt;')}</p>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   // Admin delete buttons
   if (isAdm) {
     container.querySelectorAll('.gb-del').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const idx = parseInt(btn.dataset.gbIdx);
-        const entries = JSON.parse(localStorage.getItem('guestbook-entries') || '[]');
-        entries.splice(idx, 1);
-        localStorage.setItem('guestbook-entries', JSON.stringify(entries));
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.gbId;
+        btn.textContent = '…';
+        await sbFetch('guestbook?id=eq.' + id, { method: 'DELETE' });
         renderGuestbook();
       });
     });
