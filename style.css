@@ -199,14 +199,13 @@ body::after {
 #desktopIcons {
   flex: 1;
   position: relative;
-  padding: 20px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, 86px);
-  grid-auto-rows: 94px;
-  align-content: start;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-content: flex-start;
   gap: 2px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 /* ─── Desktop Icons ─────────────────────────────── */
@@ -214,14 +213,16 @@ body::after {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  width: 90px;
-  padding: 10px 4px;
+  gap: 3px;
+  width: 76px;
+  height: 76px;
+  padding: 6px 2px 2px;
   border-radius: 8px;
   cursor: inherit;
   border: 2px solid transparent;
   transition: background 0.15s, border-color 0.15s;
   user-select: none;
+  flex-shrink: 0;
 }
 .desk-icon:hover {
   background: rgba(74, 124, 89, 0.06);
@@ -229,12 +230,19 @@ body::after {
 }
 .desk-icon canvas {
   display: block;
+  width: 40px;
+  height: 40px;
 }
 .desk-icon-label {
   font-family: var(--font-hand);
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 72px;
+  text-align: center;
   text-align: center;
   word-break: break-word;
   line-height: 1.2;
@@ -1858,13 +1866,11 @@ body::after {
   .h-name { letter-spacing: -2px; }
 
   #desktopIcons {
-    padding: 16px;
-    gap: 4px;
-    grid-template-columns: repeat(auto-fill, 76px);
-    grid-template-rows: repeat(auto-fill, 90px);
-    grid-auto-flow: row;
+    padding: 10px;
+    gap: 2px;
   }
-  .desk-icon { width: 76px; }
+  .desk-icon { width: 64px; height: 68px; }
+  .desk-icon canvas { width: 32px; height: 32px; }
 
   .window {
     min-width: unset !important;
