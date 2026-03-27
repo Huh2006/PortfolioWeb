@@ -45,6 +45,117 @@ function markWriggle(canvas, drawFn) {
   canvas._wriggleDraw = drawFn;
 }
 
+/* ═══ SCRIBBLE TRANSITION (OMORI-style) ════════════
+   Chaotic pencil scribbles fill the screen, pause,
+   then erase to reveal the next view.
+   ═══════════════════════════════════════════════════ */
+function scribbleTransition(duringFn) {
+  return new Promise(resolve => {
+    const canvas = $('#scribbleOverlay');
+    if (!canvas) { duringFn?.(); resolve(); return; }
+
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.classList.add('active');
+
+    const W = canvas.width, H = canvas.height;
+    const totalScribbles = 90;       // number of scribble strokes to fill screen
+    const eraseScribbles = 60;       // strokes to erase
+    let drawn = 0;
+    let phase = 'fill'; // 'fill' → 'pause' → 'erase' → 'done'
+
+    // Generate a single chaotic scribble stroke
+    function drawScribble(color, lineW, alpha) {
+      // Random start point
+      const sx = Math.random() * W;
+      const sy = Math.random() * H;
+      const segments = 6 + Math.floor(Math.random() * 8);
+      const spread = 60 + Math.random() * 180;
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineW;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(sx, sy);
+
+      let cx = sx, cy = sy;
+      for (let i = 0; i < segments; i++) {
+        const nx = cx + (Math.random() - 0.5) * spread;
+        const ny = cy + (Math.random() - 0.5) * spread;
+        const cpx = cx + (Math.random() - 0.5) * spread * 0.8;
+        const cpy = cy + (Math.random() - 0.5) * spread * 0.8;
+        ctx.quadraticCurveTo(cpx, cpy, nx, ny);
+        cx = nx; cy = ny;
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Phase 1: Fill with scribbles
+    function fillStep() {
+      // Draw several scribbles per frame for speed
+      const batch = 4;
+      for (let b = 0; b < batch && drawn < totalScribbles; b++) {
+        const progress = drawn / totalScribbles;
+        // Start thin and light, get thicker and darker
+        const lw = 1.5 + progress * 6;
+        const alpha = 0.3 + progress * 0.7;
+        // Mix of black ink and dark gray
+        const color = Math.random() > 0.2 ? '#1A1A1A' : '#333';
+        drawScribble(color, lw, alpha);
+        drawn++;
+      }
+
+      if (drawn < totalScribbles) {
+        requestAnimationFrame(fillStep);
+      } else {
+        // Screen is filled — run the swap callback
+        setTimeout(() => {
+          duringFn?.();
+          setTimeout(startErase, 150);
+        }, 200);
+      }
+    }
+
+    // Phase 2: Erase by drawing scribbles in background color
+    let erased = 0;
+    function startErase() {
+      phase = 'erase';
+      eraseStep();
+    }
+
+    function eraseStep() {
+      const batch = 5;
+      for (let b = 0; b < batch && erased < eraseScribbles; b++) {
+        const progress = erased / eraseScribbles;
+        const lw = 8 + progress * 14;
+        drawScribble('#F7F5F0', lw, 1);
+        // Also add some white for desktop bg
+        drawScribble('#FFFFFF', lw * 0.6, 0.5);
+        erased++;
+      }
+
+      if (erased < eraseScribbles) {
+        requestAnimationFrame(eraseStep);
+      } else {
+        // Final clear
+        setTimeout(() => {
+          ctx.clearRect(0, 0, W, H);
+          canvas.classList.remove('active');
+          resolve();
+        }, 100);
+      }
+    }
+
+    requestAnimationFrame(fillStep);
+  });
+}
+
 /* ═══ BOOT SCREEN ══════════════════════════════════ */
 (function boot() {
   const screen = $('#bootScreen');
@@ -79,14 +190,13 @@ function markWriggle(canvas, drawFn) {
 
   function addLine() {
     if (i >= total) {
-      // Boot done — fade out and show hero
+      // Boot done — scribble transition to hero
       setTimeout(() => {
-        screen.classList.add('fading');
-        setTimeout(() => {
+        scribbleTransition(() => {
           screen.classList.add('hidden');
           const hero = $('#heroWrap');
           hero.classList.remove('hidden');
-        }, 600);
+        });
       }, 400);
       return;
     }
@@ -209,17 +319,18 @@ function markWriggle(canvas, drawFn) {
   }, 800);
 })();
 
-/* ─── Enter Desktop (zoom into laptop) ─────────── */
+/* ─── Enter Desktop (scribble transition) ─────────── */
 $('#enterDesktop')?.addEventListener('click', () => {
   const wrap = $('#heroWrap');
   const desk = $('#desktop');
-  wrap.classList.add('zooming');
-  setTimeout(() => {
+
+  scribbleTransition(() => {
+    // Swap views while scribbles cover the screen
     wrap.classList.add('zoomed');
     desk.classList.remove('hidden');
     requestAnimationFrame(() => desk.classList.add('visible'));
     initDesktop();
-  }, 1400);
+  });
 });
 
 function logoutDesktop() {
@@ -235,16 +346,18 @@ function logoutDesktop() {
   }
   // Close all windows
   Object.keys(openWindows).forEach(id => closeWindow(id));
-  // Fade out desktop
-  desk.classList.remove('visible');
-  setTimeout(() => {
+
+  // Scribble transition back to hero
+  scribbleTransition(() => {
+    desk.classList.remove('visible');
     desk.classList.add('hidden');
     wrap.classList.remove('zoomed', 'zooming');
+    wrap.classList.remove('hidden');
     wrap.style.transition = 'none';
     requestAnimationFrame(() => {
       wrap.style.transition = '';
     });
-  }, 500);
+  });
 }
 
 
