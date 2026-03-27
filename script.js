@@ -46,8 +46,9 @@ function markWriggle(canvas, drawFn) {
 }
 
 /* ═══ SCRIBBLE TRANSITION (OMORI-style) ════════════
-   Chaotic pencil scribbles fill the screen, pause,
-   then erase to reveal the next view.
+   Frantic, continuous back-and-forth marker scribbles
+   rapidly engulf the screen from center outward, hold
+   on solid black, then snap-fade to reveal next view.
    ═══════════════════════════════════════════════════ */
 function scribbleTransition(duringFn) {
   return new Promise(resolve => {
@@ -61,94 +62,161 @@ function scribbleTransition(duringFn) {
     canvas.classList.add('active');
 
     const W = canvas.width, H = canvas.height;
-    const totalScribbles = 90;       // number of scribble strokes to fill screen
-    const eraseScribbles = 60;       // strokes to erase
-    let drawn = 0;
-    let phase = 'fill'; // 'fill' → 'pause' → 'erase' → 'done'
+    const cx = W / 2, cy = H / 2;
 
-    // Generate a single chaotic scribble stroke
-    function drawScribble(color, lineW, alpha) {
-      // Random start point
-      const sx = Math.random() * W;
-      const sy = Math.random() * H;
-      const segments = 6 + Math.floor(Math.random() * 8);
-      const spread = 60 + Math.random() * 180;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
+    // ── Horizontal zigzag pass (like someone scribbling back and forth) ──
+    function zigzagPass(yCenter, spread, lineW, alpha) {
       ctx.save();
       ctx.globalAlpha = alpha;
-      ctx.strokeStyle = color;
+      ctx.strokeStyle = '#000';
       ctx.lineWidth = lineW;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
       ctx.beginPath();
-      ctx.moveTo(sx, sy);
 
-      let cx = sx, cy = sy;
-      for (let i = 0; i < segments; i++) {
-        const nx = cx + (Math.random() - 0.5) * spread;
-        const ny = cy + (Math.random() - 0.5) * spread;
-        const cpx = cx + (Math.random() - 0.5) * spread * 0.8;
-        const cpy = cy + (Math.random() - 0.5) * spread * 0.8;
-        ctx.quadraticCurveTo(cpx, cpy, nx, ny);
-        cx = nx; cy = ny;
+      const startX = -20;
+      const wobble = spread * 0.6;
+      let x = startX;
+      let y = yCenter + (Math.random() - 0.5) * spread * 0.3;
+      ctx.moveTo(x, y);
+
+      let dir = 1; // 1 = going right, -1 = going left
+      while ((dir === 1 && x < W + 20) || (dir === -1 && x > -20)) {
+        const stepX = (30 + Math.random() * 50) * dir;
+        const stepY = (Math.random() - 0.5) * wobble;
+        const cpx = x + stepX * 0.5 + (Math.random() - 0.5) * 20;
+        const cpy = y + stepY + (Math.random() - 0.5) * wobble * 0.5;
+        x += stepX;
+        y = yCenter + (Math.random() - 0.5) * spread;
+        ctx.quadraticCurveTo(cpx, cpy, x, y);
       }
       ctx.stroke();
       ctx.restore();
     }
 
-    // Phase 1: Fill with scribbles
-    function fillStep() {
-      // Draw several scribbles per frame for speed
-      const batch = 4;
-      for (let b = 0; b < batch && drawn < totalScribbles; b++) {
-        const progress = drawn / totalScribbles;
-        // Start thin and light, get thicker and darker
-        const lw = 1.5 + progress * 6;
-        const alpha = 0.3 + progress * 0.7;
-        // Mix of black ink and dark gray
-        const color = Math.random() > 0.2 ? '#1A1A1A' : '#333';
-        drawScribble(color, lw, alpha);
-        drawn++;
-      }
+    // ── Circular scribble burst (spiraling from a point) ──
+    function spiralBurst(ox, oy, radius, lineW, alpha) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = lineW;
+      ctx.beginPath();
+      ctx.moveTo(ox, oy);
 
-      if (drawn < totalScribbles) {
+      let angle = Math.random() * Math.PI * 2;
+      let r = 0;
+      const steps = 20 + Math.floor(Math.random() * 15);
+      for (let i = 0; i < steps; i++) {
+        r += radius / steps + (Math.random() - 0.5) * 4;
+        angle += 0.8 + Math.random() * 1.2;
+        const nx = ox + Math.cos(angle) * r + (Math.random() - 0.5) * 8;
+        const ny = oy + Math.sin(angle) * r + (Math.random() - 0.5) * 8;
+        ctx.lineTo(nx, ny);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // ── Aggressive diagonal slash ──
+    function diagonalSlash(lineW, alpha) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = lineW;
+      ctx.beginPath();
+
+      const startEdge = Math.random() > 0.5;
+      let x = startEdge ? -10 : W + 10;
+      let y = Math.random() * H;
+      ctx.moveTo(x, y);
+
+      const dir = startEdge ? 1 : -1;
+      const steps = 8 + Math.floor(Math.random() * 6);
+      for (let i = 0; i < steps; i++) {
+        x += (W / steps + (Math.random() - 0.5) * 60) * dir;
+        y += (Math.random() - 0.5) * H * 0.3;
+        ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // ── Build the fill sequence — layers of increasingly aggressive scribbles ──
+    const layers = [];
+
+    // Layer 1: Thin, sparse zigzags across screen (ghostly first marks)
+    for (let i = 0; i < 8; i++) {
+      const y = (H / 8) * i + Math.random() * (H / 8);
+      layers.push({ fn: () => zigzagPass(y, 30, 1.5 + Math.random(), 0.3 + Math.random() * 0.2), frame: i });
+    }
+
+    // Layer 2: Spiral bursts from center expanding outward
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI * 2 / 6) * i + Math.random() * 0.5;
+      const dist = 50 + Math.random() * 100;
+      const ox = cx + Math.cos(angle) * dist;
+      const oy = cy + Math.sin(angle) * dist;
+      layers.push({ fn: () => spiralBurst(ox, oy, 80 + Math.random() * 60, 2 + Math.random() * 2, 0.5), frame: 8 + Math.floor(i / 2) });
+    }
+
+    // Layer 3: Thick aggressive zigzags (filling gaps)
+    for (let i = 0; i < 12; i++) {
+      const y = Math.random() * H;
+      layers.push({ fn: () => zigzagPass(y, 50 + Math.random() * 30, 4 + Math.random() * 5, 0.6 + Math.random() * 0.3), frame: 10 + Math.floor(i / 3) });
+    }
+
+    // Layer 4: Diagonal slashes for chaos
+    for (let i = 0; i < 8; i++) {
+      layers.push({ fn: () => diagonalSlash(3 + Math.random() * 5, 0.5 + Math.random() * 0.4), frame: 12 + Math.floor(i / 2) });
+    }
+
+    // Layer 5: Dense corner bursts (fill edges)
+    [[0,0],[W,0],[0,H],[W,H],[cx,0],[cx,H],[0,cy],[W,cy]].forEach((p, i) => {
+      layers.push({ fn: () => spiralBurst(p[0], p[1], 120 + Math.random() * 80, 5 + Math.random() * 4, 0.7), frame: 14 + Math.floor(i / 2) });
+    });
+
+    // Layer 6: Final heavy fill — massive thick strokes to seal any gaps
+    for (let i = 0; i < 10; i++) {
+      const y = Math.random() * H;
+      layers.push({ fn: () => zigzagPass(y, 80, 10 + Math.random() * 10, 0.9), frame: 17 + Math.floor(i / 3) });
+    }
+
+    // Sort by frame
+    layers.sort((a, b) => a.frame - b.frame);
+    const totalFrames = layers[layers.length - 1].frame + 1;
+
+    let currentFrame = 0;
+
+    function fillStep() {
+      // Draw all layers scheduled for this frame
+      layers.filter(l => l.frame === currentFrame).forEach(l => l.fn());
+      currentFrame++;
+
+      if (currentFrame <= totalFrames) {
         requestAnimationFrame(fillStep);
       } else {
-        // Screen is filled — run the swap callback
+        // Seal with solid black to guarantee full coverage
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, W, H);
+
+        // Hold on black, swap views, then fade out
         setTimeout(() => {
           duringFn?.();
-          setTimeout(startErase, 150);
-        }, 200);
-      }
-    }
-
-    // Phase 2: Erase by drawing scribbles in background color
-    let erased = 0;
-    function startErase() {
-      phase = 'erase';
-      eraseStep();
-    }
-
-    function eraseStep() {
-      const batch = 5;
-      for (let b = 0; b < batch && erased < eraseScribbles; b++) {
-        const progress = erased / eraseScribbles;
-        const lw = 8 + progress * 14;
-        drawScribble('#F7F5F0', lw, 1);
-        // Also add some white for desktop bg
-        drawScribble('#FFFFFF', lw * 0.6, 0.5);
-        erased++;
-      }
-
-      if (erased < eraseScribbles) {
-        requestAnimationFrame(eraseStep);
-      } else {
-        // Final clear
-        setTimeout(() => {
-          ctx.clearRect(0, 0, W, H);
-          canvas.classList.remove('active');
-          resolve();
-        }, 100);
+          setTimeout(() => {
+            // Quick fade out
+            canvas.style.transition = 'opacity 0.35s ease-out';
+            canvas.style.opacity = '0';
+            setTimeout(() => {
+              canvas.classList.remove('active');
+              canvas.style.transition = '';
+              canvas.style.opacity = '';
+              ctx.clearRect(0, 0, W, H);
+              resolve();
+            }, 380);
+          }, 120);
+        }, 180);
       }
     }
 
